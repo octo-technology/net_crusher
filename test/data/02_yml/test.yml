@@ -1,0 +1,4 @@
+int: 1
+string0: ab://aa
+string1: " a b c "
+string2: 'abcd'

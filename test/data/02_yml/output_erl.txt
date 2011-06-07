@@ -1,0 +1,7 @@
+[              Logger] Set log level : 0
+[             unknown] 1
+[             unknown] ab://aa
+[             unknown]  a b c 
+[             unknown] 'abcd'
+[       AssertMonitor] Assert ok 0
+[                root] End

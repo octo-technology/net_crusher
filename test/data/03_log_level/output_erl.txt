@@ -1,0 +1,8 @@
+[              Logger] Set log level : 0
+[              Logger] Set log level : 1
+[             unknown] Hi
+[              Logger] Set log level : 0
+[              Logger] Set log level : 1
+[             unknown] I'm back
+[       AssertMonitor] Assert ok 0
+[                root] End

@@ -1,0 +1,22 @@
+[              Logger] Set log level : 0
+[             unknown] int
+[             unknown] 1
+[             unknown] 3
+[             unknown] 3
+[             unknown] -1
+[             unknown] 1
+[             unknown] boolean
+[             unknown] false
+[             unknown] true
+[             unknown] true
+[             unknown] false
+[             unknown] false
+[             unknown] true
+[             unknown] false
+[             unknown] true
+[             unknown] boolean
+[             unknown] true
+[             unknown] false
+[             unknown] true
+[       AssertMonitor] Assert ok 0
+[                root] End

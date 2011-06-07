@@ -1,0 +1,9 @@
+%% -- ERLANG INET CONFIGURATION FILE --
+%% read the hosts file
+{file, hosts, "/etc/hosts"}.
+%% enable EDNS
+{edns,0}.
+%% disable caching
+{cache_size, 100}.
+%% specify lookup method
+{lookup, [file, dns]}.

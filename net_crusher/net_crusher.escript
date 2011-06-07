@@ -1,0 +1,31 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%%! +c +K true -sname net_crusher -setcookie my_beautiful_cookie_qui_tue -mnesia schema_location ram
+%% NetCrusher.
+%% Copyright (C) 2011 Bertrand Paquet, David Rousselie All Rights Reserved
+
+%% NetCrusher is free software; you can redistribute it and/or
+%% modify it under the terms of the GNU Lesser General Public
+%% License as published by the Free Software Foundation; either
+%% version 2.1 of the License, or (at your option) any later version.
+
+%% NetCrusher is distributed in the hope that it will be useful,
+%% but WITHOUT ANY WARRANTY; without even the implied warranty of
+%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+%% Lesser General Public License for more details.
+
+%% You should have received a copy of the GNU Lesser General Public
+%% License along with this library; if not, write to the Free Software
+%% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+main([FileName | Argv]) ->
+  ScriptName = escript:script_name(),
+  RealFileName = case file:read_link(ScriptName) of
+    {error, _} -> ScriptName;
+    {ok, F} -> F
+  end,
+  ScriptDir = filename:dirname(RealFileName),
+  code:add_path(ScriptDir),
+  put(argv, Argv),
+  put("script_dir", ScriptDir),
+  runtime:run(FileName).

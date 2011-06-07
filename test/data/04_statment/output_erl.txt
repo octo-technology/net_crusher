@@ -1,0 +1,22 @@
+[              Logger] Set log level : 0
+[             unknown] testing loop
+[             unknown] k = 1
+[             unknown] k = 2
+[             unknown] k = 3
+[             unknown] k = 4
+[             unknown] k = 5
+[             unknown] k = 6
+[             unknown] k = 7
+[             unknown] k = 8
+[             unknown] k = 9
+[             unknown] k = 10
+[             unknown] testing while
+[             unknown] z = 0
+[             unknown] z = 1
+[             unknown] z = 2
+[             unknown] z = 3
+[             unknown] z = 4
+[             unknown] test if
+[             unknown] ok
+[       AssertMonitor] Assert ok 0
+[                root] End

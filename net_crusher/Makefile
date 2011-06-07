@@ -42,4 +42,4 @@ clean:
 	@rm -f erl_crash.dump
 
 $(EBIN_DIR)/ruby.beam: $(EBIN_FILES) ruby.yrl.tpl
-	./generate_grammar.escript $(EBIN_DIR) $(EBIN_DIR) runtime vars stats logger misc statment http_cmd http_static assert tlfj tlfj_vdf distributed file_loader sampler
+	./generate_grammar.escript $(EBIN_DIR) $(EBIN_DIR) runtime vars stats logger misc statment http_cmd http_static assert distributed file_loader sampler

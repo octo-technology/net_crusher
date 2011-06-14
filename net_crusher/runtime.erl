@@ -19,10 +19,12 @@
 -export([
   run/1,
   sub_process/3,
+  sub_process_light/3,
 
   cmd_execute/1,
   cmd_execute_and_wait/1,
   cmd_fork/2,
+  cmd_fork_light/2,
   cmd_fork_distributed/2,
 
   spawn_with_monitor_handler/4,
@@ -35,6 +37,7 @@
   start_spawn_with_monitor/0,
   stop_spawn_with_monitor/0
 ]).
+-include("../common/macros.hrl").
 
 start_spawn_with_monitor() ->
   global:register_name(process_spawn_with_monitor,
@@ -50,7 +53,10 @@ stop_spawn_with_monitor() ->
 spawn_child(Target, Node, Module, Function, Args) ->
   ProcessId = spawn(Node, Module, Function, Args),
   erlang:monitor(process, ProcessId),
-  Target ! {process, ProcessId},
+  case Target of
+    undefined -> noop;
+    _ -> Target ! {process, ProcessId}
+  end,
   ProcessId.
 
 spawn_children([], SubProcesses, ParentProcessDict, _) ->
@@ -154,10 +160,9 @@ spawn_with_monitor(Node, Module, Function, Args) ->
                  {Node, Module, Function, Args}).
 
 spawn_child_with_monitor(Node, Module, Function, Args) ->
-  tools:sync_msg(global:whereis_name(process_spawn_with_monitor),
-                 process, spawn_child,
-                 {Node, Module, Function, Args,
-                  list_to_integer(vars:str_g_or_else("max_player", "10000000"))}).
+  global:whereis_name(process_spawn_with_monitor) ! {spawn_child, self(),
+                                                     {Node, Module, Function, Args,
+                                                      list_to_integer(vars:str_g_or_else("max_player", "10000000"))}}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RUNTIME
@@ -193,12 +198,21 @@ sub_process(Name, FileName, Map) ->
   cmd_execute(FileName),
   wait_for_childs_end().
 
+sub_process_light(Name, FileName, Map) ->
+  lists:map(fun({K, V}) -> put(K, V) end, Map),
+  vars:cmd_s("name", Name),
+  cmd_execute(FileName),
+  wait_for_childs_end().
+
 fork(Node, StrName, StrFileName) ->
   spawn_child_with_monitor(Node, ?MODULE, sub_process,
                            [StrName, StrFileName, get()]).
 
+cmd_fork_light(StrName, StrFileName) ->
+  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, StrFileName, get()]), "cmd_fork_light").
+
 cmd_fork(StrName, StrFileName) ->
-  fork(node(), StrName, StrFileName).
+  ?TIME(fork(node(), StrName, StrFileName), "cmd_fork").
 
 cmd_fork_distributed(StrName, StrFileName) ->
   fork(tools:sync_msg(global:whereis_name(process_fork_handler),
@@ -235,7 +249,8 @@ run(FileName) ->
 
   vars:cmd_set_name("root"),
 
-  ProcessId = cmd_fork("unknown", FileName),
+  ProcessId = spawn_with_monitor(node(), ?MODULE, sub_process,
+                                 ["unknown", FileName, get()]),
   wait_for_process_end(ProcessId),
 
   stop().

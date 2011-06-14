@@ -16,10 +16,15 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 -module(lexer).
 
--export([lex/1]).
+-export([lex/1,
+         lex/2
+        ]).
 
 lex(Str) ->
-  L = parse(Str ++ " \n", 1),
+  lex(Str, 1).
+
+lex(Str, LineNumber) ->
+  L = parse(Str ++ " \n", LineNumber),
   {Tokens, [Size]} = lists:split(length(L) - 1, L),
   {ok, Tokens, Size - 1}.
 

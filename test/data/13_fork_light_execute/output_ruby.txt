@@ -1,0 +1,4 @@
+[master] here is root master
+[a] here is a a
+[master] here is b master
+Test ok, 0 asserts

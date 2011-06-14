@@ -20,6 +20,6 @@ Process crash detected
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"12_variable_unbound_interpreted.rb"},
-                                    {line,1,"log 0, \"#{g('toto')}\""},
+                                    {line,17,"log 0, \"#{g('toto')}\""},
                                     {last_http_url,undefined}}}},
  [{runtime,cmd_execute,1},{runtime,sub_process,3}]}

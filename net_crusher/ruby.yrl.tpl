@@ -94,23 +94,23 @@ expr -> call '(' expr ',' expr ')' : { function, { string, {  element(2, '$1'), 
 
 Erlang code.
 
--export([scan/1, scan_file/1, parse_str/1, parse_file/1]).
+-export([scan/1, scan_file/1, parse_str/2, parse_file/1]).
 
 process_string({string, LineNumber, Str}) ->
   try
-    {string, extract_interpreted(Str)}
+    {string, extract_interpreted(Str, LineNumber)}
   catch
     _:E -> throw({interpreted_string_parse_error, LineNumber, Str, E})
   end.
 
-extract_interpreted("") -> [];
-extract_interpreted(Str) ->
+extract_interpreted("", _) -> [];
+extract_interpreted(Str, LineNumber) ->
   case re:run(Str, "#\{([^\}]+)\}") of
     nomatch -> [{string, Str}];
     {match, [{_, _}, {Start, Stop}]} ->
-      {ok, {expr, Result}} = parse_str(string:substr(Str, Start + 1, Stop)),
+      {ok, {expr, Result}} = parse_str(string:substr(Str, Start + 1, Stop), LineNumber),
       Middle = {interpreted_string, Result},
-      End = [ Middle | extract_interpreted(string:substr(Str, Start + Stop + 2))],
+      End = [ Middle | extract_interpreted(string:substr(Str, Start + Stop + 2), LineNumber)],
       case Start of
         2 -> End;
         _ -> [{string, string:substr(Str, 1, Start - 2)} | End]
@@ -129,8 +129,8 @@ post_process([{Type, LineNumber, Value} | T]) -> [{Type, LineNumber, Value} | po
 post_process([{Token, LineNumber} | T]) -> [{Token, LineNumber} | post_process(T)];
 post_process([]) -> [].
 
-parse_str(Str) ->
-  {ok, List, _} = post_process(scan(Str)),
+parse_str(Str, LineNumber) ->
+  {ok, List, _} = post_process(lexer:lex(Str, LineNumber)),
   parse(List).
 
 parse_file(FileName) ->

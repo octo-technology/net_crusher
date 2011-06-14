@@ -9,6 +9,6 @@ Process crash detected
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"06_assert_error.rb"},
-                                    {line,4,"assert_equal \"a\", \"ab\""},
+                                    {line,20,"assert_equal \"a\", \"ab\""},
                                     {last_http_url,undefined}}}},
  [{runtime,cmd_execute,1},{runtime,sub_process,3}]}

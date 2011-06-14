@@ -14,4 +14,10 @@
 ## You should have received a copy of the GNU Lesser General Public
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-log 0, "#{g('toto')}"
+log 0, "here is root #{get_name()}"
+
+fork_light "a", "a.rb"
+
+sleep_ms 20
+
+execute "b.rb"

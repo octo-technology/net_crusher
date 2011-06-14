@@ -225,6 +225,10 @@ class NetCrusher
       end
     end
 
+    def fork_light(name, filename)
+      fork(name, filename)
+    end
+
     def fork (name, filename)
       current_map = Thread.current[:map]
       thread = Thread.new do

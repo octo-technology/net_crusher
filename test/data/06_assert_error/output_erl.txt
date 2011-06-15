@@ -4,11 +4,11 @@ Process crash detected
                                    [{assert,cmd_assert_equal,2},
                                     {interpreter,run_command,1},
                                     {interpreter,run_commands,1},
-                                    {runtime,cmd_execute,1},
+                                    {runtime,execute,2},
                                     {runtime,sub_process,3}]}},
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"06_assert_error.rb"},
                                     {line,20,"assert_equal \"a\", \"ab\""},
                                     {last_http_url,undefined}}}},
- [{runtime,cmd_execute,1},{runtime,sub_process,3}]}
+ [{runtime,execute,2},{runtime,sub_process,3}]}

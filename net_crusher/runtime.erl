@@ -162,9 +162,9 @@ spawn_with_monitor(Node, Module, Function, Args) ->
                  {Node, Module, Function, Args}).
 
 spawn_child_with_monitor(Node, Module, Function, Args) ->
-  global:whereis_name(process_spawn_with_monitor) ! {spawn_child, self(),
-                                                     {Node, Module, Function, Args,
-                                                      list_to_integer(vars:str_g_or_else("max_player", "10000000"))}}.
+  tools:sync_msg(global:whereis_name(process_spawn_with_monitor), process, spawn_child,
+                 {Node, Module, Function, Args,
+                  list_to_integer(vars:str_g_or_else("max_player", "10000000"))}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RUNTIME

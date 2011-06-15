@@ -4,11 +4,11 @@ Process crash detected
                                    [{http_cmd,cmd_http_get,2},
                                     {interpreter,run_command,1},
                                     {interpreter,run_commands,1},
-                                    {runtime,cmd_execute,1},
+                                    {runtime,execute,2},
                                     {runtime,sub_process,3}]}},
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"08_big_error.rb"},
                                     {line,17,"http_get \"toto\\\\\\\\\""},
                                     {last_http_url,"toto\\\\"}}}},
- [{runtime,cmd_execute,1},{runtime,sub_process,3}]}
+ [{runtime,execute,2},{runtime,sub_process,3}]}

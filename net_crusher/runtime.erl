@@ -27,6 +27,8 @@
   cmd_fork_light/2,
   cmd_fork_distributed/2,
 
+  execute/2,
+
   spawn_with_monitor_handler/4,
   spawn_with_monitor/4,
   spawn_child_with_monitor/4,
@@ -169,16 +171,18 @@ spawn_child_with_monitor(Node, Module, Function, Args) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 cmd_execute(StrFileName) ->
-  Commands = tools:sync_msg(global:whereis_name(process_file_loader), file_loaded, load_file, {StrFileName}),
+  execute(StrFileName, file_loader:load_file(StrFileName)).
+
+execute(FileName, Commands) ->
   case catch interpreter:run_commands(Commands) of
     {line, Line, E} ->
-      LineStr = tools:sync_msg(global:whereis_name(process_file_loader), line, read_line, {StrFileName, Line}),
+      LineStr = file_loader:read_line(FileName, Line),
       throw({execution_error,
         {error, E},
         {context,
           {node, node()},
           {process_name, vars:str_get_name()},
-          {file, StrFileName},
+          {file, FileName},
           {line, Line, LineStr},
           {last_http_url, get(last_http_url)}
       }});

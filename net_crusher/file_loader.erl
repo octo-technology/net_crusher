@@ -20,6 +20,8 @@
   start/0,
   stop/0,
   str_read_file/1,
+  load_file/1,
+  read_line/2,
   file_loader/0
 ]).
 
@@ -31,6 +33,12 @@ start() ->
 
 stop() ->
   tools:stop_process(process_file_loader).
+
+load_file(FileName) ->
+  tools:sync_msg(global:whereis_name(process_file_loader), file_loaded, load_file, {FileName}).
+
+read_line(FileName, Line) ->
+  tools:sync_msg(global:whereis_name(process_file_loader), line, read_line, {FileName, Line}).
 
 str_read_file(StrFileName) ->
   tools:sync_msg(global:whereis_name(process_file_loader),
@@ -44,7 +52,7 @@ file_loader(Map) ->
   receive
     halt -> noop;
     {read_line, Target, {FileName, Nb}} ->
-      Target ! {line, read_line(FileName, Nb)},
+      Target ! {line, read_line_(FileName, Nb)},
       file_loader(Map);
     {load_file, Target, {FileName}} ->
       {NewMap, Result} = case dict:is_key(FileName, Map) of
@@ -75,7 +83,7 @@ read_file(FileName) ->
   {ok, S} = file:read_file(FileName),
   binary_to_list(S).
 
-read_line(FileName, Nb) ->
+read_line_(FileName, Nb) ->
   {ok, Fd} = file:open(FileName, [read]),
   find_line(Fd, Nb).
 

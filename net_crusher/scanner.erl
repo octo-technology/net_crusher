@@ -45,6 +45,7 @@ scan_func(Tokens, [{Name, _} | T]) -> [seek(Tokens, Name) | scan_func(Tokens, T)
 seek([{atom, K, Name}, {'(', K} | T], Name) -> {Name, seek_vars(T)};
 seek([_ | T], Name) -> seek(T, Name).
 
+seek_vars([{atom, _, ModuleName}, {':', _}, {atom, K, Name} | T]) -> seek([{atom, K, Name} | T], Name);
 seek_vars([{var, _, Name} | T]) -> [Name | seek_vars(T)];
 seek_vars([{',', _} | T]) -> seek_vars(T);
 seek_vars([{'-', _} | T]) -> seek_vars(T);

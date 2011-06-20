@@ -4,6 +4,7 @@ ERLC_FLAGS=-W -o $(EBIN_DIR)
 SUBDIRS=common json net_crusher monitoring
 
 EBIN_DIR=ebin
+EXBIN_DIR=exbin
 ERLC=erlc
 ERL=erl
 EMULATOR=beam
@@ -27,6 +28,7 @@ ebin:
 
 clean:
 	rm -rf $(EBIN_DIR)
+	rm -rf $(EXBIN_DIR)
 	@rm -f erl_crash.dump
 
 erl: all

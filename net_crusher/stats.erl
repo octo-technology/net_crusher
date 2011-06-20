@@ -23,11 +23,11 @@
 
   start_timestamp_handler/0,
   stop_timestamp_handler/0,
-  cmd_put_timestamp/1,
-  cmd_chrono_delta/2,
+  put_timestamp/1,
+  chrono_delta/2,
   get_timestamp/1,
 
-  blk_chrono/2,
+  chrono/2,
   send_stats/3
 ]).
 -include_lib("stdlib/include/qlc.hrl").
@@ -52,7 +52,7 @@ start_stats_monitor() ->
                                                   ["StatsMonitor",
                                                    fun() -> stats:stats_monitor() end])).
 
-cmd_put_timestamp(StrLabel) ->
+put_timestamp(StrLabel) ->
   ?TIME(put_timestamp_(StrLabel), [put_timestamp, StrLabel]).
 
 put_timestamp_(StrLabel) ->
@@ -72,7 +72,7 @@ get_timestamp_(StrLabel) ->
     _ -> undefined
   end.
 
-cmd_chrono_delta(StrLabel, StrEventName) ->
+chrono_delta(StrLabel, StrEventName) ->
   Now = tools:micro_timestamp(),
   Start = get_timestamp(StrLabel),
   send_stats(Now, Now - Start, StrEventName).
@@ -80,7 +80,7 @@ cmd_chrono_delta(StrLabel, StrEventName) ->
 stop_stats_monitor() ->
   tools:stop_process(process_stats_monitor).
 
-blk_chrono(StrEventName, Blk) ->
+chrono(StrEventName, Blk) ->
   Start = tools:micro_timestamp(),
   Blk(),
   Stop = tools:micro_timestamp(),
@@ -92,7 +92,7 @@ get_log_filename() ->
     undefined -> undefined;
     _ -> case get("event_log_suffix_var") of
       undefined -> get("event_log_prefix");
-      SuffixVar -> get("event_log_prefix") ++ "." ++ vars:str_g_or_else(SuffixVar, "undefined")
+      SuffixVar -> get("event_log_prefix") ++ "." ++ vars:g_or_else(SuffixVar, "undefined")
     end
   end.
 
@@ -100,7 +100,7 @@ send_stats(Start, Delay, StrEventName) ->
   global:whereis_name(process_stats_monitor) ! {stats, get_log_filename(),
                                                 integer_to_list(Start) ++ " "
                                                 ++ integer_to_list(Delay) ++ " "
-                                                ++ vars:str_get_name() ++ " "
+                                                ++ vars:get_name() ++ " "
                                                 ++ StrEventName}.
 
 stats_monitor() ->
@@ -112,7 +112,7 @@ stats_monitor(FileName, Data) ->
     {stats, F, String} ->
       case FileName of
         undefined ->
-          logger:cmd_log(0, "Using output stat file " ++ F);
+          logger:log(0, "Using output stat file " ++ F);
         _ -> noop
       end,
       stats_monitor(F, [String | Data]);

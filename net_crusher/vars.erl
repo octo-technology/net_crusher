@@ -17,37 +17,38 @@
 -module(vars).
 
 -export([
-  bool_is_defined/1,
-  str_g_or_else/2,
-  str_g/1,
-  cmd_s/2,
-  str_gg/2,
-  str_gg_or_else/3,
-  cmd_sg/3,
+  is_defined/1,
+  g_or_else/2,
+  g/1,
+  s/2,
+  gg/2,
+  gg_or_else/3,
+  sg/3,
+  set_map_in_session/1,
 
-  str_get_name/0,
-  cmd_set_name/1
+  get_name/0,
+  set_name/1
 ]).
 
-str_g_or_else(StrKey, StrDefaultValue) ->
+g_or_else(StrKey, StrDefaultValue) ->
   case get(StrKey) of
     undefined -> StrDefaultValue;
     V -> V
   end.
 
-str_g(StrKey) ->
+g(StrKey) ->
   case get(StrKey) of
     undefined -> throw({no_variable_defined, StrKey});
     V -> V
   end.
 
-str_gg(StrTable, StrKey) ->
+gg(StrTable, StrKey) ->
   case ets:lookup_element(list_to_atom(StrTable), StrKey, 2) of
     undefined -> throw({no_variable_defined, StrKey});
     V -> V
   end.
 
-str_gg_or_else(StrTable, StrKey, StrDefaultValue) ->
+gg_or_else(StrTable, StrKey, StrDefaultValue) ->
   case ets:info(list_to_atom(StrTable)) of
     undefined -> StrDefaultValue;
     _ -> case ets:member(list_to_atom(StrTable), StrKey) of
@@ -59,24 +60,27 @@ str_gg_or_else(StrTable, StrKey, StrDefaultValue) ->
     end
   end.
 
-cmd_sg(StrTable, StrKey, StrVal) ->
+sg(StrTable, StrKey, StrVal) ->
   case ets:info(list_to_atom(StrTable)) of
     undefined -> ets:new(list_to_atom(StrTable), [named_table, public]);
     _ -> noop
   end,
   ets:insert(list_to_atom(StrTable), {StrKey, StrVal}).
 
-bool_is_defined(StrKey) ->
+is_defined(StrKey) ->
   get(StrKey) /= undefined.
 
-cmd_s(StrKey, StrVal) ->
+s(StrKey, StrVal) ->
   case StrVal of
     "" -> erase(StrKey);
     _ -> put(StrKey, StrVal)
   end.
 
-str_get_name() ->
-  str_g("name").
+get_name() ->
+  g(<<"name">>).
 
-cmd_set_name(StrName) ->
-  cmd_s("name", StrName).
+set_name(StrName) ->
+  s(<<"name">>, StrName).
+
+set_map_in_session([{Key, Value} | T]) -> vars:s(Key, Value), set_map_in_session(T);
+set_map_in_session([]) -> ok.

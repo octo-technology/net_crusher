@@ -18,16 +18,15 @@
 
 -export([
   run/1,
+  stop/0,
   sub_process/3,
   sub_process_light/3,
 
-  cmd_execute/1,
-  cmd_execute_and_wait/1,
-  cmd_fork/2,
-  cmd_fork_light/2,
-  cmd_fork_distributed/2,
-
-  execute/2,
+  execute/1,
+  execute_and_wait/1,
+  fork/2,
+  fork_light/2,
+  fork_distributed/2,
 
   spawn_with_monitor_handler/4,
   spawn_with_monitor/4,
@@ -62,15 +61,15 @@ spawn_child(Target, Node, Module, Function, Args) ->
   ProcessId.
 
 spawn_children([], SubProcesses, ParentProcessDict, _) ->
-  logger:cmd_log(4, "No more process to spawn"),
+  logger:log(4, "No more process to spawn"),
   {[], SubProcesses, ParentProcessDict};
 spawn_children([{Target, Node, Module, Function, Args} | T] = ProcessesToSpawn, SubProcesses, ParentProcessDict, MaxProcesses) ->
   case length(SubProcesses) of
     N when N > MaxProcesses ->
-      logger:cmd_log(2, "Too many processes are running, waiting before spawning a new one"),
+      logger:log(2, "Too many processes are running, waiting before spawning a new one"),
       {ProcessesToSpawn, SubProcesses, ParentProcessDict};
     N ->
-      logger:cmd_logf(3, "Spawn child ~p", [N]),
+      logger:logf(3, "Spawn child ~p", [N]),
       NewProcess = spawn_child(Target, Node, Module, Function, Args),
       spawn_children(T, [NewProcess | SubProcesses], dict:append(Target, NewProcess, ParentProcessDict), MaxProcesses)
   end.
@@ -92,11 +91,11 @@ remove_pid(ParentProcessDict, Pid) ->
     undefined -> ParentProcessDict;
     ParentPid ->
       SubProcesses = dict:fetch(ParentPid, ParentProcessDict),
-      logger:cmd_logf(3, "Removing ~p from parent ~p subprocess", [Pid, ParentPid]),
+      logger:logf(3, "Removing ~p from parent ~p subprocess", [Pid, ParentPid]),
       NewSubProcesses = lists:delete(Pid, SubProcesses),
       case length(NewSubProcesses) of
           0 ->
-              logger:cmd_logf(3, "Parent ~p has no more subprocess", [ParentPid]),
+              logger:logf(3, "Parent ~p has no more subprocess", [ParentPid]),
               ParentPid ! no_more_subprocess;
           _ -> noop
       end,
@@ -109,7 +108,7 @@ remove_pid(ParentProcessDict, Pid) ->
 % a list of spawn children as value
 spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
                            ParentProcessDict, MaxProcesses) ->
-  put("name", "spawner"),
+  vars:set_name("spawner"),
   receive
     halt -> noop;
     {spawn, Target, {Node, Module, Function, Args}} ->
@@ -136,7 +135,7 @@ spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
       spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
                                  ParentProcessDict, MaxProcesses);
     {'DOWN', _, process, Pid, normal} ->
-      logger:cmd_logf(4, "New process down ~p", [Pid]),
+      logger:logf(4, "New process down ~p", [Pid]),
       CleanParentProcessDict = remove_pid(ParentProcessDict, Pid),
       {NewProcessesToSpawn,
        NewSubProcesses,
@@ -146,9 +145,9 @@ spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
       spawn_with_monitor_handler(NewProcessesToSpawn, NewSubProcesses,
                                  NewParentProcessDict, MaxProcesses);
     {'DOWN', _, process, _, E} ->
-      misc:cmd_sleep_ms(100),
+      misc:sleep_ms(100),
       io:fwrite("Process crash detected\n~150p\n", [E]),
-      misc:cmd_sleep_ms(100),
+      misc:sleep_ms(100),
       halt(1)
   end.
 
@@ -164,14 +163,14 @@ spawn_with_monitor(Node, Module, Function, Args) ->
 spawn_child_with_monitor(Node, Module, Function, Args) ->
   tools:sync_msg(global:whereis_name(process_spawn_with_monitor), process, spawn_child,
                  {Node, Module, Function, Args,
-                  list_to_integer(vars:str_g_or_else("max_player", "10000000"))}).
+                  list_to_integer(vars:g_or_else("max_player", "10000000"))}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RUNTIME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-cmd_execute(StrFileName) ->
-  execute(StrFileName, file_loader:load_file(StrFileName)).
+execute(FileName) ->
+  exCode:load_file(".", FileName).
 
 execute(FileName, Commands) ->
   case catch interpreter:run_commands(Commands) of
@@ -181,7 +180,7 @@ execute(FileName, Commands) ->
         {error, E},
         {context,
           {node, node()},
-          {process_name, vars:str_get_name()},
+          {process_name, vars:get_name()},
           {file, FileName},
           {line, Line, LineStr},
           {last_http_url, get(last_http_url)}
@@ -189,55 +188,55 @@ execute(FileName, Commands) ->
     X -> X
   end.
 
-cmd_execute_and_wait(StrFileName) ->
-  cmd_execute(StrFileName),
+execute_and_wait(StrFileName) ->
+  execute(StrFileName),
   wait_for_childs_end().
+
+init_process(Name, Map) ->
+  lists:map(fun({K, V}) -> put(K, V) end, Map),
+  vars:set_name(Name).
 
 sub_process(Name, FileName, Map) ->
-  lists:map(fun({K, V}) -> put(K, V) end, Map),
-  vars:cmd_s("name", Name),
+  init_process(Name, Map),
   {ok, Hostname} = inet:gethostname(),
-  vars:cmd_s("hostname", Hostname),
+  vars:s("hostname", Hostname),
   tools:init_rand(Name),
-  cmd_execute(FileName),
-  wait_for_childs_end().
+  execute(FileName).
+  %% wait_for_childs_end().
 
 sub_process_light(Name, FileName, Map) ->
-  lists:map(fun({K, V}) -> put(K, V) end, Map),
-  vars:cmd_s("name", Name),
-  cmd_execute(FileName),
-  wait_for_childs_end().
+  init_process(Name, Map),
+  execute(FileName).
+  %% wait_for_childs_end().
 
-fork(Node, StrName, StrFileName) ->
+fork_(Node, StrName, StrFileName) ->
   spawn_child_with_monitor(Node, ?MODULE, sub_process,
                            [StrName, StrFileName, get()]).
 
-cmd_fork_light(StrName, StrFileName) ->
-  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, StrFileName, get()]), "cmd_fork_light").
+fork_light(StrName, StrFileName) ->
+  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, StrFileName, get()]), "fork_light").
 
-cmd_fork(StrName, StrFileName) ->
-  ?TIME(fork(node(), StrName, StrFileName), "cmd_fork").
+fork(StrName, StrFileName) ->
+  ?TIME(fork_(node(), StrName, StrFileName), "fork").
 
-cmd_fork_distributed(StrName, StrFileName) ->
-  fork(tools:sync_msg(global:whereis_name(process_fork_handler),
-                      node, get_node_for_fork, {StrName}),
-       StrName, StrFileName).
+fork_distributed(StrName, StrFileName) ->
+  fork_(tools:sync_msg(global:whereis_name(process_fork_handler),
+                       node, get_node_for_fork, {StrName}),
+        StrName, StrFileName).
 
 init_node(FileName) ->
   inets:start(),
   crypto:start(),
   ssl:start(),
   mnesia:start(),
-  tools_http:start_void_http_monitor(),
-  tools:init_rand(FileName).
+  tools_http:start_void_http_monitor().
 
 run(FileName) ->
   io:setopts([{encoding, utf8}]),
-  logger:cmd_set_log_level(0),
-
+  logger:set_log_level(0),
   init_node(FileName),
   start_spawn_with_monitor(),
-  misc:cmd_inject_argv(),
+  misc:inject_argv(),
   distributed:start(get("script_dir"), get("remote_nodes_ssh"),
                     get("remote_nodes"), get("use_local_node")),
   mnesia:change_config(extra_db_nodes, nodes()),
@@ -249,35 +248,35 @@ run(FileName) ->
   stats:start_stats_monitor(),
   file_loader:start(),
 
-  global:register_name(process_yml_loader, spawn_with_monitor(node(), ?MODULE, spawn_with_name, ["YmlLoader", fun() -> yml_loader:yml_loader() end])),
+  yml_loader:start(),
 
-  vars:cmd_set_name("root"),
+  init_process(<<"unknown">>, get()).
+  %% ProcessId = spawn_with_monitor(node(), ?MODULE, sub_process,
+  %%                                ["unknown", FileName, get()]),
+  %% wait_for_process_end(ProcessId),
 
-  ProcessId = spawn_with_monitor(node(), ?MODULE, sub_process,
-                                 ["unknown", FileName, get()]),
-  wait_for_process_end(ProcessId),
-
-  stop().
+  %% stop().
 
 stop() ->
+  wait_for_childs_end(),
   global:whereis_name(process_assert_monitor) ! halt,
-  misc:cmd_sleep_ms(100),
-  logger:cmd_log(0, "End"),
+  misc:sleep_ms(100),
+  logger:log(0, "End"),
   stats:stop_stats_monitor(),
   stats:stop_timestamp_handler(),
   file_loader:stop(),
-  global:whereis_name(process_yml_loader) ! halt,
+  yml_loader:stop(),
   distributed:stop(),
-  misc:cmd_sleep_ms(100),
+  misc:sleep_ms(100),
   stop_spawn_with_monitor(),
-  misc:cmd_sleep_ms(100),
+  misc:sleep_ms(100),
   mnesia:stop().
 
 wait_for_childs_end() ->
   case get_nb_child_to_wait() of
-    0 -> logger:cmd_log(4, "No child to wait");
+    0 -> logger:log(4, "No child to wait");
     _ ->
-      logger:cmd_log(4, "Wait for child end"),
+      logger:log(4, "Wait for child end"),
       receive
         no_more_subprocess -> noop
       end
@@ -286,11 +285,11 @@ wait_for_childs_end() ->
 wait_for_process_end(P) ->
   case rpc:pinfo(P, [status]) of
     [{status, _}] ->
-      misc:cmd_sleep_ms(500),
+      misc:sleep_ms(500),
       wait_for_process_end(P);
     _ -> noop
   end.
 
 spawn_with_name(Name, Function) ->
-  put("name", Name),
+  vars:set_name(Name),
   Function().

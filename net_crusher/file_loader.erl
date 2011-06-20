@@ -45,7 +45,7 @@ str_read_file(StrFileName) ->
                  file_read, read_file, StrFileName).
 
 file_loader() ->
-  vars:cmd_set_name("FileLoader"),
+  vars:set_name("FileLoader"),
   file_loader(dict:new()).
 
 file_loader(Map) ->
@@ -68,7 +68,7 @@ file_loader(Map) ->
             _:E2 ->
               throw({unable_to_parse_file, FileName, {E2, erlang:get_stacktrace()}})
           end,
-          logger:cmd_log(2, "File loaded " ++ FileName),
+          logger:log(2, "File loaded " ++ FileName),
           {dict:store(FileName, Content, Map), Content}
       end,
       Target ! {file_loaded, Result},
@@ -79,7 +79,7 @@ file_loader(Map) ->
   end.
 
 read_file(FileName) ->
-  logger:cmd_logf(1, "Reading file ~p", [FileName]),
+  logger:logf(1, "Reading file ~p", [FileName]),
   {ok, S} = file:read_file(FileName),
   binary_to_list(S).
 

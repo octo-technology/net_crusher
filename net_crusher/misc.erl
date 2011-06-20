@@ -17,59 +17,50 @@
 -module(misc).
 
 -export([
-  cmd_sleep_ms/1,
-  str_md5/1,
-  int_random/2,
-  str_extract_last_number/1,
-  cmd_inject_argv/0,
-  cmd_load_yml/1,
-  str_extract_with_regex/2,
-  str_extract_with_regex_or_else/3
+  sleep_ms/1,
+  md5/1,
+  random/2,
+  extract_last_number/1,
+  inject_argv/0,
+  extract_with_regex/2,
+  extract_with_regex_or_else/3
 ]).
 
-cmd_sleep_ms(IntMs) ->
+sleep_ms(IntMs) ->
   receive
     after IntMs -> noop
   end.
 
-str_md5(StrStr) ->
+md5(StrStr) ->
   tools:md5_hex(StrStr).
 
-int_random(IntStart, IntStop) ->
+random(IntStart, IntStop) ->
   IntStart + random:uniform(IntStop - IntStart).
 
-set_map_in_session([{Key, Value} | T]) -> put(Key, Value), set_map_in_session(T);
-set_map_in_session([]) -> ok.
-
-cmd_load_yml(StrFileName) ->
-  logger:cmd_log(2, "Load yml file " ++ StrFileName),
-  set_map_in_session(yml_loader:load(StrFileName)),
-  ok.
-
-cmd_inject_argv() ->
+inject_argv() ->
   {ok, Re} = re:compile("(.+)=(.+)"),
   lists:map(fun(S) ->
     case re:run(S, Re) of
-      nomatch -> throw({wrong_arg, S});
+      nomatch -> logger:logf(1, "Ignoring argument ~p", [S]);
       {match, [{_, _}, {A1, A2}, {B1, B2}]} ->
         Key = string:substr(S, A1 + 1, A2),
         Value = string:substr(S, B1 + 1, B2),
-        logger:cmd_log(1, "Setting from argv " ++ Key ++ " : " ++ Value),
-        vars:cmd_s(Key, Value)
+        logger:log(1, "Setting from argv " ++ Key ++ " : " ++ Value),
+        vars:s(Key, Value)
     end
-  end, get(argv)).
+  end, init:get_plain_arguments()).
 
-str_extract_with_regex(StrContent, StrRegex) ->
+extract_with_regex(StrContent, StrRegex) ->
   case re:run(StrContent, StrRegex) of
     nomatch -> throw({regex_not_found, StrRegex, StrContent});
     {match, [{_, _}, {A1, A2}]} -> string:substr(StrContent, A1 + 1, A2)
   end.
 
-str_extract_with_regex_or_else(StrContent, StrRegex, StrElse) ->
+extract_with_regex_or_else(StrContent, StrRegex, StrElse) ->
   case re:run(StrContent, StrRegex) of
     nomatch -> StrElse;
     {match, [{_, _}, {A1, A2}]} -> string:substr(StrContent, A1 + 1, A2)
   end.
 
-str_extract_last_number(StrK) ->
-  str_extract_with_regex(StrK, "(\\d+)[^\\d]*$").
+extract_last_number(StrK) ->
+  extract_with_regex(StrK, "(\\d+)[^\\d]*$").

@@ -17,24 +17,26 @@
 -module(logger).
 
 -export([
-  cmd_log/2,
-  cmd_logf/3,
-  cmd_set_log_level/1
+  log/2,
+  logf/3,
+  set_log_level/1
 ]).
 
-cmd_logf(IntLogLevel, StrFormat, ArrArgs) ->
-  log(IntLogLevel, vars:str_g_or_else("name", "no process name"),
+logf(IntLogLevel, StrFormat, ArrArgs) ->
+  log(IntLogLevel, vars:g_or_else(<<"name">>, "no process name"),
       StrFormat, ArrArgs).
 
-cmd_log(IntLogLevel, StrMessage) ->
-  cmd_logf(IntLogLevel, "~s", [StrMessage]).
+log(IntLogLevel, StrMessage) when is_binary(StrMessage); is_list(StrMessage) ->
+  logf(IntLogLevel, "~s", [StrMessage]);
+log(IntLogLevel, StrMessage) ->
+  logf(IntLogLevel, "~p", [StrMessage]).
 
-cmd_set_log_level(IntLogLevel) ->
+set_log_level(IntLogLevel) ->
   log(0, "Logger", "Set log level : ~p", [IntLogLevel]),
-  vars:cmd_s("log_level", IntLogLevel).
+  vars:s("log_level", IntLogLevel).
 
 log(AskedLogLevel, Name, Format, Args) ->
-  LogLevel = vars:str_g_or_else("log_level", 0),
+  LogLevel = vars:g_or_else("log_level", 0),
   if AskedLogLevel =< LogLevel ->
       io:fwrite("~17.3f [~25s][~20s] " ++ Format ++ "\n", [tools:micro_timestamp() / 1000,
                                                            atom_to_list(node()), Name] ++ Args);

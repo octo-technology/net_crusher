@@ -16,41 +16,41 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 -module(worker).
 
--export([cmd_start_worker/2,
-         cmd_trigger_worker/1,
-         cmd_kill_worker/1,
+-export([
+         start/2,
+         trigger/1,
+         kill/1,
          worker/2
         ]).
 
-cmd_start_worker(StrWorkerName, StrFileName) ->
-  global:register_name(list_to_atom(StrWorkerName),
+start(StrWorkerName, StrFileName) ->
+  global:register_name(binary_to_atom(StrWorkerName, utf8),
                       runtime:spawn_with_monitor(node(), ?MODULE, worker,
                                                  [StrWorkerName, StrFileName])).
 
-cmd_trigger_worker(StrWorkerName) ->
-  global:whereis_name(list_to_atom(StrWorkerName)) ! {trigger, get()}.
+trigger(StrWorkerName) ->
+  global:whereis_name(binary_to_atom(StrWorkerName, utf8)) ! {trigger, get()}.
 
-cmd_kill_worker(StrWorkerName) ->
-  tools:stop_process(list_to_atom(StrWorkerName)).
+kill(StrWorkerName) ->
+  tools:stop_process(binary_to_atom(StrWorkerName, utf8)).
 
 worker(Name, FileName) ->
-  vars:cmd_s("name", Name),
-  logger:cmd_log(1, "Starting worker"),
-  Commands = file_loader:load_file(FileName),
-  worker_loop(FileName, Commands).
+  vars:set_name(Name),
+  logger:log(1, "Starting worker"),
+  worker_loop(FileName).
 
-worker_loop(FileName, Commands) ->
+worker_loop(FileName) ->
   receive
     {trigger, EnvMap} ->
       lists:map(fun({K, V}) ->
                   case K of
-                    "name" -> noop;
+                    <<"name">> -> noop;
                     _ -> put(K, V)
                   end
                 end,
                 EnvMap),
-      logger:cmd_log(1, "Worker triggered"),
-      runtime:execute(FileName, Commands),
-      worker_loop(FileName, Commands);
-    halt -> logger:cmd_log(1, "Worker killed")
+      logger:log(1, "Worker triggered"),
+      runtime:execute(FileName),
+      worker_loop(FileName);
+    halt -> logger:log(1, "Worker killed")
   end.

@@ -5,4 +5,4 @@
 [     workerunknown_1] here is a workerunknown_1
 [     workerunknown_1] Worker killed
 [       AssertMonitor] Assert ok 0
-[                root] End
+[             unknown] End

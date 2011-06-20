@@ -19,46 +19,40 @@
 -export([
   assert_monitor/1,
 
-  cmd_assert_equal/2,
-  cmd_assert_contains/2,
-  cmd_assert_matches/2,
-  cmd_assert_equal_one_of/2,
-  cmd_assert_greater/2
+  assert_equal/2,
+  assert_contains/2,
+  assert_matches/2,
+  assert_equal_one_of/2,
+  assert_greater/2
 ]).
 
-cmd_assert_equal(Str1, Str2) when Str1 == Str2 ->
+assert_equal(Str1, Str2) when Str1 == Str2 ->
   global:whereis_name(process_assert_monitor) ! ok;
-cmd_assert_equal(Str1, Str2) ->
+assert_equal(Str1, Str2) ->
   throw({assert_error, equals, [{expected, Str1}, {actual, Str2}]}).
 
-assert_equal_one_of([], Str2) ->
+assert_equal_one_of([], _) ->
   throw({assert_error});
-assert_equal_one_of([H | T], Str2) ->
-  case catch cmd_assert_equal(H, Str2) of
+assert_equal_one_of(Array = [H | T], Str2) ->
+  case catch assert_equal(H, Str2) of
     {assert_error, equals, _} -> assert_equal_one_of(T, Str2);
-    {assert_error} -> throw({assert_error});
+    {assert_error} -> throw({assert_error, equals, [{expected_one_of, Array}, {actual, Str2}]});
     _ -> noop
   end.
 
-cmd_assert_equal_one_of(ArrStr1, Str2) ->
-  case catch assert_equal_one_of(ArrStr1, Str2) of
-    {assert_error} -> throw({assert_error, equals, [{expected_one_of, ArrStr1}, {actual, Str2}]});
-    _ -> noop
-  end.
-
-cmd_assert_contains(StrHaystack, StrNeedle) ->
+assert_contains(StrHaystack, StrNeedle) ->
   case string:str(StrHaystack, StrNeedle) of
     0 -> throw({assert_error, contains, [{text, StrNeedle}, {text, StrHaystack}]});
     _ -> global:whereis_name(process_assert_monitor) ! ok
   end.
 
-cmd_assert_matches(Str, StrRegexp) ->
+assert_matches(Str, StrRegexp) ->
   case re:match(Str, StrRegexp) of
     {match, _, _} -> global:whereis_name(process_assert_monitor) ! ok;
     nomatch -> throw({assert_error, matches, [{regexp, StrRegexp}, {text, Str}]})
   end.
 
-cmd_assert_greater(Str1, Str2) when is_list(Str1) ->
+assert_greater(Str1, Str2) when is_list(Str1) ->
   V1 = case catch(list_to_float(Str1)) of
     {'EXIT', _} -> list_to_integer(Str1);
     VV1 -> VV1
@@ -74,6 +68,6 @@ cmd_assert_greater(Str1, Str2) when is_list(Str1) ->
 
 assert_monitor(K) ->
   receive
-    halt -> logger:cmd_log(0, "Assert ok " ++ integer_to_list(K));
+    halt -> logger:log(0, "Assert ok " ++ integer_to_list(K));
     ok -> assert_monitor(K + 1)
   end.

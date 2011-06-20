@@ -14,27 +14,13 @@
 %% You should have received a copy of the GNU Lesser General Public
 %% License along with this library; if not, write to the Free Software
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
--module(statment).
+Runtime.run("fake")
 
--export([
-  do_while/2,
+Yml_loader.load_yml "test.yml"
 
-  make_call/2,
+Logger.log 0, Vars.g("int")
+Logger.log 0, Vars.g("string0")
+Logger.log 0, Vars.g("string1")
+Logger.log 0, Vars.g("string2")
 
-  loop/3
-]).
-
-make_call(StrModule, StrFunction) ->
-  erlang:apply(list_to_atom(StrModule), list_to_atom("str_" ++ StrFunction), []).
-
-do_while(Cond, Blk) ->
-  Blk(),
-  case Cond() of
-    true -> do_while(Cond, Blk);
-    false -> noop
-  end.
-
-loop(IntFrom, IntTo, _Blk) when IntFrom > IntTo -> ok;
-loop(IntFrom, IntTo, Blk) ->
-  Blk(IntFrom),
-  loop(IntFrom + 1, IntTo, Blk).
+Runtime.stop

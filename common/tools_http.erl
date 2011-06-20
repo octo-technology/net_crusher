@@ -122,7 +122,10 @@ read_http_data_decode(Sock, Buffer) ->
           other
       end;
     {more, _} ->
-      {ok, Buffer2} = read_http_data_binary(Sock),
+      {ok, Buffer2} = case catch read_http_data_binary(Sock) of
+        {socket_closed, _} -> io:format("Socket_closed: ~p", [Buffer]), throw({socket_closed, Sock});
+                         X -> X
+      end,
       read_http_data_decode(Sock, <<Buffer/binary, Buffer2/binary>>)
   end.
 

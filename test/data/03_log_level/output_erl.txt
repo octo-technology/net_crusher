@@ -5,4 +5,4 @@
 [              Logger] Set log level : 1
 [             unknown] I'm back
 [       AssertMonitor] Assert ok 0
-[                root] End
+[             unknown] End

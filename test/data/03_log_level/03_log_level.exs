@@ -14,27 +14,18 @@
 %% You should have received a copy of the GNU Lesser General Public
 %% License along with this library; if not, write to the Free Software
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
--module(statment).
+Runtime.run("fake")
 
--export([
-  do_while/2,
+Logger.set_log_level 1
 
-  make_call/2,
+Logger.log 1, "Hi"
 
-  loop/3
-]).
+Logger.set_log_level 0
 
-make_call(StrModule, StrFunction) ->
-  erlang:apply(list_to_atom(StrModule), list_to_atom("str_" ++ StrFunction), []).
+Logger.log 1, "Oula"
 
-do_while(Cond, Blk) ->
-  Blk(),
-  case Cond() of
-    true -> do_while(Cond, Blk);
-    false -> noop
-  end.
+Logger.set_log_level 1
 
-loop(IntFrom, IntTo, _Blk) when IntFrom > IntTo -> ok;
-loop(IntFrom, IntTo, Blk) ->
-  Blk(IntFrom),
-  loop(IntFrom + 1, IntTo, Blk).
+Logger.log 1, "I'm back"
+
+Runtime.stop

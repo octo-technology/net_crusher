@@ -24,10 +24,10 @@
 
 start(ScriptDir, RemoteNodeSSH, RemoteNodes, UseLocalNode) ->
   case lists:member(process_fork_handler, global:registered_names()) of
-    true -> logger:cmd_log(2, "Process fork handler already started");
+    true -> logger:log(2, "Process fork handler already started");
     _ ->
-      logger:cmd_log(1, "Starting process fork handler"),
-      LogFun = fun(S) -> logger:cmd_log(4, S) end,
+      logger:log(1, "Starting process fork handler"),
+      LogFun = fun(S) -> logger:log(4, S) end,
       Result = case UseLocalNode of
               "false" -> [];
               _ -> [node()]
@@ -36,7 +36,7 @@ start(ScriptDir, RemoteNodeSSH, RemoteNodes, UseLocalNode) ->
             connect_by_ssh(split(RemoteNodeSSH), ScriptDir, LogFun)
             ++
             connect(split(RemoteNodes), LogFun),
-      logger:cmd_log(3, "Connected nodes : " ++ integer_to_list(length(Result))),
+      logger:log(3, "Connected nodes : " ++ integer_to_list(length(Result))),
       global:register_name(process_fork_handler,
                            spawn(node(), ?MODULE, fork_handler, [Result, 1]))
   end.
@@ -49,7 +49,7 @@ fork_handler(Nodes, CurrentIndex) ->
     halt -> noop;
     {get_node_for_fork, Target, {Name}} ->
       TargetNode = lists:nth(CurrentIndex, Nodes),
-      logger:cmd_logf(5, "Create new process ~p on ~p", [Name, TargetNode]),
+      logger:logf(5, "Create new process ~p on ~p", [Name, TargetNode]),
       Target ! {node, TargetNode},
       fork_handler(Nodes, CurrentIndex rem length(Nodes) + 1)
   end.

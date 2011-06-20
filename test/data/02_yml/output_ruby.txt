@@ -1,5 +1,0 @@
-[master] 1
-[master] ab://aa
-[master]  a b c 
-[master] abcd
-Test ok, 0 asserts

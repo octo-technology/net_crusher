@@ -14,27 +14,25 @@
 %% You should have received a copy of the GNU Lesser General Public
 %% License along with this library; if not, write to the Free Software
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
--module(statment).
+Runtime.run("fake")
 
--export([
-  do_while/2,
+Logger.log(0, "quote and simple quote")
 
-  make_call/2,
+Vars.s "toto", "value"
+Logger.log 0, Vars.g("toto")
 
-  loop/3
-]).
+Vars.s 'toto, "value"
+Logger.log 0, Vars.g('toto)
 
-make_call(StrModule, StrFunction) ->
-  erlang:apply(list_to_atom(StrModule), list_to_atom("str_" ++ StrFunction), []).
+Logger.log 0, "int to string"
+Logger.log 0, "1"
 
-do_while(Cond, Blk) ->
-  Blk(),
-  case Cond() of
-    true -> do_while(Cond, Blk);
-    false -> noop
-  end.
+Logger.log 0, "inside double quote"
+Logger.log 0, "a_#{1 + 2}_b"
+Logger.log 0, "a_#{Vars.g('toto)}_b"
+Logger.log 0, "#{1 + 2} #{Vars.g('toto)}"
 
-loop(IntFrom, IntTo, _Blk) when IntFrom > IntTo -> ok;
-loop(IntFrom, IntTo, Blk) ->
-  Blk(IntFrom),
-  loop(IntFrom + 1, IntTo, Blk).
+Vars.s 'int, 1234
+Logger.log 0, "a_#{Vars.g('int) + 10}_b"
+
+Runtime.stop

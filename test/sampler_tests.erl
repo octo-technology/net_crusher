@@ -26,7 +26,7 @@
 
 setup() ->
   runtime:start_spawn_with_monitor(),
-  sampler:cmd_start_sampler("10", "0,20,40,20,10,10,0").
+  sampler:start_sampler("10", "0,20,40,20,10,10,0").
 
 cleanup(_) ->
   sampler:stop(),

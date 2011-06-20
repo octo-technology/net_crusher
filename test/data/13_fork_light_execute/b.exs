@@ -14,27 +14,4 @@
 %% You should have received a copy of the GNU Lesser General Public
 %% License along with this library; if not, write to the Free Software
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
--module(statment).
-
--export([
-  do_while/2,
-
-  make_call/2,
-
-  loop/3
-]).
-
-make_call(StrModule, StrFunction) ->
-  erlang:apply(list_to_atom(StrModule), list_to_atom("str_" ++ StrFunction), []).
-
-do_while(Cond, Blk) ->
-  Blk(),
-  case Cond() of
-    true -> do_while(Cond, Blk);
-    false -> noop
-  end.
-
-loop(IntFrom, IntTo, _Blk) when IntFrom > IntTo -> ok;
-loop(IntFrom, IntTo, Blk) ->
-  Blk(IntFrom),
-  loop(IntFrom + 1, IntTo, Blk).
+Logger.log 0, "here is b #{Vars.get_name()}"

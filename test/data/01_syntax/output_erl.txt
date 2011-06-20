@@ -9,7 +9,5 @@
 [             unknown] a_value_b
 [             unknown] 3 value
 [             unknown] a_1244_b
-[             unknown] array=["a",
-                                                                           "b"], int=1, str=test.
 [       AssertMonitor] Assert ok 0
-[                root] End
+[             unknown] End

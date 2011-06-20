@@ -16,18 +16,20 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 -module(sampler).
 
--export([start/2,
+-export([
+         start/2,
          stop/0,
-         cmd_start_sampler/2,
-         cmd_stop_sampler/0,
+         start_sampler/2,
+         stop_sampler/0,
          int_get_new_player_answer_delay/0,
-         sampler/4]).
+         sampler/4
+        ]).
 
 start(NbSamples, SampleRepartition) ->
   case lists:member(process_sampler, global:registered_names()) of
-    true -> logger:cmd_log(2, "Sampler already started");
+    true -> logger:log(2, "Sampler already started");
     _ ->
-      logger:cmd_logf(1, "Starting sampler with ~p samples and a repartition ~p",
+      logger:logf(1, "Starting sampler with ~p samples and a repartition ~p",
                       [NbSamples, SampleRepartition]),
       global:register_name(process_sampler,
                            runtime:spawn_with_monitor(node(), sampler, sampler,
@@ -37,12 +39,12 @@ start(NbSamples, SampleRepartition) ->
 stop() ->
   tools:stop_process(process_sampler).
 
-cmd_start_sampler(StrNbSamples, StrRepartition) ->
+start_sampler(StrNbSamples, StrRepartition) ->
   start(list_to_integer(StrNbSamples),
         lists:map(fun(Str) -> list_to_integer(Str) end,
                   re:split(StrRepartition, ",", [{return, list}]))).
 
-cmd_stop_sampler() -> stop().
+stop_sampler() -> stop().
 
 int_get_new_player_answer_delay() ->
   tools:sync_msg(global:whereis_name(process_sampler), sample_value, get_sample,

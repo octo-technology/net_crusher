@@ -64,7 +64,7 @@ micro_timestamp() ->
 
 init_rand(Str) ->
   {_,A2,A3} = now(),
-  random:seed(erlang:phash(list_to_atom(Str), 132735487), A2, A3).
+  random:seed(erlang:phash(binary_to_atom(Str, utf8), 132735487), A2, A3).
 
 sync_msg(Name, ResponseId, Command, Args) ->
   ?TIME(sync_msg_(Name, ResponseId, Command, Args), [sync_msg, ResponseId, Command]).

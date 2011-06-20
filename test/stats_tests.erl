@@ -36,7 +36,7 @@ stats_test_() ->
    [fun test_read_write/0]}.
 
 test_read_write() ->
-  stats:cmd_put_timestamp("Test"),
+  stats:put_timestamp("Test"),
   case stats:get_timestamp("Test") of
     undefined -> throw({error, "undefined timestamp Test found"});
     _ -> noop

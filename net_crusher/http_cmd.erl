@@ -46,7 +46,7 @@ cmd_http_get(StrUrl, StrHeaders) ->
   logger:cmd_logf(5, "HTTP GET: ~p", [StrUrl]),
   {ok, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, StrHeaders ++ generate_headers(ServerAddr, ServerPort, Path)),
   logger:cmd_logf(5, "HTTP GET Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(Socket),
+  tools_http:close_socket(Socket, Headers),
   process_cookie(ServerAddr, Headers),
   put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
 
@@ -116,6 +116,7 @@ generate_headers(ServerAddr, ServerPort, Path, Header) ->
     _ -> ":" ++ integer_to_list(ServerPort)
   end
   ++ "\r\n" ++
+  "Connection: keep-alive\r\n" ++
   cookies:generate_headers(ServerAddr, Path, get("cookies"))
   ++
   basic_auth(ServerAddr)
@@ -272,4 +273,3 @@ cmd_http_get_with_last_modified(StrUrl) ->
 
 str_last_http_url() ->
   get(last_http_url).
-

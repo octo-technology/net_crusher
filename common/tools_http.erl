@@ -19,6 +19,7 @@
 -export([
   open_socket/3,
   close_socket/1,
+  close_socket/2,
   send_socket/2,
   send_socket_binary/2,
 
@@ -42,23 +43,56 @@
   replace_http_monitor/1
   ]).
 
-open_socket(Protcol, ServerAddr, ServerPort) ->
-  Opts = [binary, {packet, 0}, {reuseaddr, true}, {keepalive, true}, {active, false}],
-  %Opts = [binary, {packet, 0}, {ip, ClientIP}, {reuseaddr, false}, {active, false}],
-  {ok, Socket} = gen_tcp:connect(ServerAddr, ServerPort, Opts, infinity),
-  whereis(http_monitoring) ! {socket_connected},
-  OutputSocket = case Protcol of
-    http -> Socket;
-    https ->
-    {ok, SocketSSL} = ssl:connect(Socket, []),
-    SocketSSL
-  end,
-  %io:format("Create socket to ~s ~w\n", [ServerAddr, ServerPort]),
-  OutputSocket.
+socket_table_name() ->
+  list_to_atom("socket" ++ pid_to_list(self())).
+
+create_socket_table() ->
+  case ets:info(socket_table_name()) of
+    undefined -> ets:new(socket_table_name(), [named_table, public]);
+    _ -> noop
+  end.
+
+store_socket(Key, Socket) ->
+  ets:insert(socket_table_name(), {Key, Socket}).
+
+delete_socket(Socket) ->
+  ets:match_delete(socket_table_name(), {'_', Socket}).
+
+get_socket(Key) ->
+  case ets:lookup(socket_table_name(), Key) of
+      [] -> undefined;
+      [{Key, Socket} | Tail] -> Socket
+  end.
+
+open_socket(Protocol, ServerAddr, ServerPort) ->
+  create_socket_table(),
+  case get_socket({Protocol, ServerAddr, ServerPort}) of
+    undefined -> Opts = [binary, {packet, 0}, {reuseaddr, true}, {keepalive, true}, {active, false}],
+                 %% Opts = [binary, {packet, 0}, {ip, ClientIP}, {reuseaddr, false}, {active, false}],
+                 {ok, Socket} = gen_tcp:connect(ServerAddr, ServerPort, Opts, infinity),
+                 whereis(http_monitoring) ! {socket_connected},
+                 OutputSocket = case Protocol of
+                                    http -> Socket;
+                                    https ->
+                                        {ok, SocketSSL} = ssl:connect(Socket, []),
+                                        SocketSSL
+                                end,
+                 store_socket({Protocol, ServerAddr, ServerPort}, OutputSocket),
+                 %% io:format("Create socket to ~s ~w\n", [ServerAddr, ServerPort]),
+                 OutputSocket;
+    S -> S
+  end.
+
+close_socket(Sock, Headers) ->
+  case extract_header(Headers, 'Connection') of
+   {ok, "keep-alive"} -> noop;
+   N -> close_socket(Sock)
+  end.
 
 close_socket(Sock) ->
   %io:format("Closing ~p\n", [Sock]),
   whereis(http_monitoring) ! {socket_closed},
+  delete_socket(Sock),
   close(Sock).
 
 close(Sock) when is_tuple(Sock) ->

@@ -44,9 +44,9 @@ cmd_http_get(StrUrl, StrHeaders) ->
   {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP GET: ~p", [StrUrl]),
-  {ok, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, StrHeaders ++ generate_headers(ServerAddr, ServerPort, Path)),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, StrHeaders ++ generate_headers(ServerAddr, ServerPort, Path)),
   logger:cmd_logf(5, "HTTP GET Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(Socket, Headers),
+  tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
   put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
 
@@ -56,9 +56,9 @@ cmd_http_post_form(StrUrl, MapParams) ->
   Params = encode_map(MapParams),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP POST: ~p (~p)", [StrUrl, MapParams]),
-  {ok, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/x-www-form-urlencoded\r\n"), Params),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/x-www-form-urlencoded\r\n"), Params),
   logger:cmd_logf(5, "HTTP POST Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(Socket),
+  tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
   put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
 
@@ -67,9 +67,9 @@ cmd_http_post_json(StrUrl, StrJson) ->
   {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP POST (JSON): ~p : ~p", [StrUrl, StrJson]),
-  {ok, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/json\r\n"), StrJson),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/json\r\n"), StrJson),
   logger:cmd_logf(5, "HTTP POST (JSON) Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(Socket),
+  tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
   put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
 

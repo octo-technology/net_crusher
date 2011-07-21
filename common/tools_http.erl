@@ -17,6 +17,7 @@
 -module(tools_http).
 
 -export([
+  reopen_socket/1,
   open_socket/3,
   close_socket/1,
   close_socket/2,
@@ -61,8 +62,13 @@ delete_socket(Socket) ->
 get_socket(Key) ->
   case ets:lookup(socket_table_name(), Key) of
       [] -> undefined;
-      [{Key, Socket} | Tail] -> Socket
+      [{Key, Socket} | _] -> Socket
   end.
+
+reopen_socket(Socket) ->
+  [[{Protocol, ServerAddr, ServerPort}]] = ets:match(socket_table_name(), {'$1', Socket}),
+  close_socket(Socket),
+  open_socket(Protocol, ServerAddr, ServerPort).
 
 open_socket(Protocol, ServerAddr, ServerPort) ->
   create_socket_table(),
@@ -86,7 +92,7 @@ open_socket(Protocol, ServerAddr, ServerPort) ->
 close_socket(Sock, Headers) ->
   case extract_header(Headers, 'Connection') of
    {ok, "keep-alive"} -> noop;
-   N -> close_socket(Sock)
+   _ -> close_socket(Sock)
   end.
 
 close_socket(Sock) ->
@@ -113,9 +119,12 @@ send_socket_binary(Sock, Data) ->
   case send(Sock, [Data]) of
     ok ->
       whereis(http_monitoring) ! {request_sent},
-      ok;
+      {ok, Sock};
     {error, closed} ->
       closed;
+    {error, enotconn} ->
+      NewSocket = reopen_socket(Sock),
+      send_socket_binary(NewSocket, Data);
     Other ->
       io:format("Other:~w\n",[Other]),
       other
@@ -151,7 +160,7 @@ read_http_data_decode(Sock, Buffer) ->
     {ok, {http_response, _, Code, Msg}, Rest} ->
       case decode_headers(Sock, Rest) of
         {ok, Headers, Body} ->
-          {ok, Code, Msg, Headers, decode_body(Sock, Headers, Body)};
+          {ok, Sock, Code, Msg, Headers, decode_body(Sock, Headers, Body)};
         _ ->
           other
       end;
@@ -227,16 +236,16 @@ decode_headers(Sock, Buffer, Acc) ->
 
 post_http(Sock, Path, Headers, PostData) ->
   case send_socket(Sock, create_http_post(Path, Headers, PostData)) of
-    ok ->
-      read_http_data_decode(Sock);
+    {ok, Socket} ->
+      read_http_data_decode(Socket);
     Other ->
       Other
   end.
 
 get_http(Sock, Path, Headers) ->
   case send_socket(Sock, create_http_get(Path, Headers)) of
-    ok ->
-      read_http_data_decode(Sock);
+    {ok, Socket} ->
+      read_http_data_decode(Socket);
     Other -> Other
   end.
 

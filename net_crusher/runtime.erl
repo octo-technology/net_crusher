@@ -244,6 +244,8 @@ run(FileName) ->
 
   global:register_name(process_assert_monitor, spawn_with_monitor(node(), ?MODULE, spawn_with_name, ["AssertMonitor", fun() -> assert:assert_monitor(0) end])),
 
+  counters:start_counter_manager(),
+  
   stats:start_timestamp_handler(),
 
   stats:start_stats_monitor(),
@@ -263,6 +265,7 @@ stop() ->
   global:whereis_name(process_assert_monitor) ! halt,
   misc:cmd_sleep_ms(100),
   logger:cmd_log(0, "End"),
+  counters:stop_counter_manager(),
   stats:stop_stats_monitor(),
   stats:stop_timestamp_handler(),
   file_loader:stop(),

@@ -56,7 +56,7 @@ cmd_http_load_static_resources() ->
     _ -> noop
   end.
 
-add_base_url_if_needed(FromUrl, []) ->
+add_base_url_if_needed(_, []) ->
   [];
 add_base_url_if_needed(FromUrl, Urls) ->
   {ok, Protocol, ServerAddr, ServerPort, Query} = tools_http:parse_url(FromUrl),
@@ -131,12 +131,12 @@ add_downloaded(Url, Result) ->
 
 find_link_in_html(S, Ext) ->
   case re:run(S, "href=[^\\/A-Za-z0-9-_]?([\\/A-Za-z0-9-_:\\.]+\\." ++ Ext ++ "(\\?[\\/A-Za-z0-9-_=&%]*)?)") of
-    {match, [{_, _}, {A1, A2} | Tail]} -> [string:substr(S, A1 +1 , A2) | find_link_in_html(string:substr(S, A1 + A2 + 1), Ext)];
+    {match, [{_, _}, {A1, A2} | _]} -> [string:substr(S, A1 +1 , A2) | find_link_in_html(string:substr(S, A1 + A2 + 1), Ext)];
     nomatch -> []
   end.
 
 find_link_in_css(S, Ext) ->
   case re:run(S, "url\\([^\\/A-Za-z0-9-_]?([\\/A-Za-z0-9-_:\\.]+\\." ++ Ext ++ "(\\?[\\/A-Za-z0-9-_=&%]*)?)\\)") of
-    {match, [{_, _}, {A1, A2} | Tail]} -> [string:substr(S, A1 +1 , A2) | find_link_in_css(string:substr(S, A1 + A2 + 1), Ext)];
+    {match, [{_, _}, {A1, A2} | _]} -> [string:substr(S, A1 +1 , A2) | find_link_in_css(string:substr(S, A1 + A2 + 1), Ext)];
     nomatch -> []
   end.

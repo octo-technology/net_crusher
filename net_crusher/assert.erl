@@ -31,7 +31,7 @@ cmd_assert_equal(Str1, Str2) when Str1 == Str2 ->
 cmd_assert_equal(Str1, Str2) ->
   throw({assert_error, equals, [{expected, Str1}, {actual, Str2}]}).
 
-assert_equal_one_of([], Str2) ->
+assert_equal_one_of([], _) ->
   throw({assert_error});
 assert_equal_one_of([H | T], Str2) ->
   case catch cmd_assert_equal(H, Str2) of

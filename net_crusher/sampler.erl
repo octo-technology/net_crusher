@@ -20,7 +20,7 @@
          stop/0,
          cmd_start_sampler/2,
          cmd_stop_sampler/0,
-         int_get_new_player_answer_delay/0,
+         int_get_new_sample/0,
          sampler/4]).
 
 start(NbSamples, SampleRepartition) ->
@@ -44,9 +44,8 @@ cmd_start_sampler(StrNbSamples, StrRepartition) ->
 
 cmd_stop_sampler() -> stop().
 
-int_get_new_player_answer_delay() ->
-  tools:sync_msg(global:whereis_name(process_sampler), sample_value, get_sample,
-                 {}) * 1000.
+int_get_new_sample() ->
+  tools:sync_msg(global:whereis_name(process_sampler), sample_value, get_sample, {}).
 
 sampler(NbSamples, SampleRepartition, CurrentSample, SampleRepartitionIndex) ->
   receive

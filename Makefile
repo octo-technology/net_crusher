@@ -1,7 +1,7 @@
 ERL_SOURCES=$(wildcard *.erl)
 ERLC_FLAGS=-W -o $(EBIN_DIR)
 
-SUBDIRS=common json net_crusher monitoring
+SUBDIRS=common json net_crusher
 
 EBIN_DIR=ebin
 ERLC=erlc

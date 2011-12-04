@@ -1,6 +1,6 @@
 #!/usr/bin/env escript
 %% -*- erlang -*-
-%%! +c +K true -sname net_crusher -setcookie my_beautiful_cookie_qui_tue -mnesia schema_location ram
+%%! +c +K true -sname net_crusher -setcookie my_beautiful_cookie_qui_tue -mnesia schema_location
 %% NetCrusher.
 %% Copyright (C) 2011 Bertrand Paquet, David Rousselie All Rights Reserved
 
@@ -19,6 +19,7 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 main([FileName | Argv]) ->
+  error_logger:tty(false),
   ScriptName = escript:script_name(),
   RealFileName = case file:read_link(ScriptName) of
     {error, _} -> ScriptName;

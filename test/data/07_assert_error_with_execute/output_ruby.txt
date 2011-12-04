@@ -1,7 +1,0 @@
-../../../net_crusher/net_crusher.rb::in `assert_greater': [master] Assert error : 1.0 < 2.0 (RuntimeError)
-	from a.rb::in `execute'
-	from 07_assert_error_with_execute.rb::in `run_file'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb::in `each'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb:

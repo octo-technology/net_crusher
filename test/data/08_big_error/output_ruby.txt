@@ -1,8 +1,0 @@
-RUBY_PATH/ruby/1.8/uri/common.rb::in `split': bad URI(is not URI?): toto\\ (URI::InvalidURIError)
-	from RUBY_PATH/ruby/1.8/uri/common.rb::in `parse'
-	from ../../../net_crusher/net_crusher.rb::in `http_get'
-	from 08_big_error.rb::in `run_file'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb::in `each'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb:

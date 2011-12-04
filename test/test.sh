@@ -24,11 +24,6 @@ for i in $TO_BE_TESTED; do
 		ERL_AFLAGS="-mnesia schema_location ram -eval 'error_logger:tty(false).'" $ERLANG_CMD $i.rb | grep -v "=ERROR REPORT====" | grep -v "Error in process"| perl -pe 's/^.*\s\[\s*[^[]*(\[\s*.*)$/$1/' | perl -pe 's/{node,[^}]+}/{node}/g' | perl -pe 's/yeccpars[0-9_]*/yeccpars/g' > $TMP_FILE
 		diff -du output_erl.txt $TMP_FILE || exit 1
 	fi
-	if [ -f "output_ruby.txt" ]; then
-		echo "Processing ruby test for $i"
-		$RUBY_CMD $i.rb 2>&1 | perl -pe "s/$RUBY_PATH/RUBY_PATH/" | perl -pe "s/:[0-9]*/:/g" | grep -v Running | grep -v Starting > $TMP_FILE || true
-		diff -du output_ruby.txt $TMP_FILE || exit 1
-	fi
 	echo "Test ok : $i"
 	cd ../../
 done

@@ -1,6 +1,0 @@
-../../../net_crusher/net_crusher.rb::in `g': Not defined toto (RuntimeError)
-	from 11_variable_unbound.rb::in `run_file'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb::in `each'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb:

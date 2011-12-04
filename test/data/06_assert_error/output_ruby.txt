@@ -1,6 +1,0 @@
-../../../net_crusher/net_crusher.rb::in `assert_equal': [master] Assert error : <a> : <ab> (RuntimeError)
-	from 06_assert_error.rb::in `run_file'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb::in `each'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb:

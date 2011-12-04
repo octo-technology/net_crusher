@@ -12,7 +12,7 @@ Process crash detected
                                                     {context,{node},
                                                              {process_name,"unknown"},
                                                              {file,"a.rb"},
-                                                             {line,17,"assert_greater 2, 1"},
+                                                             {line,18,"assert_greater 2, 1"},
                                                              {last_http_url,undefined}}},
                                    [{runtime,execute,2},
                                     {interpreter,run_command,1},
@@ -22,6 +22,6 @@ Process crash detected
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"07_assert_error_with_execute.rb"},
-                                    {line,17,"execute \"a.rb\""},
+                                    {line,18,"execute \"a.rb\""},
                                     {last_http_url,undefined}}}},
  [{runtime,execute,2},{runtime,sub_process,3}]}

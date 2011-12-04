@@ -9,6 +9,6 @@ Process crash detected
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"08_big_error.rb"},
-                                    {line,17,"http_get \"toto\\\\\\\\\""},
+                                    {line,18,"http_get \"toto\\\\\\\\\""},
                                     {last_http_url,"toto\\\\"}}}},
  [{runtime,execute,2},{runtime,sub_process,3}]}

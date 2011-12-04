@@ -27,7 +27,7 @@ clean:
 	@rm -f erl_crash.dump
 
 $(TEST_MODULES):
-	@tempfile=`mktemp`; \
+	@tempfile=`mktemp net_crusher_test`; \
 	$(ERL) -pa $(EBIN_DIR) -mnesia schema_location ram -run $@ test -run init stop -noshell | tee $$tempfile; \
 	grep failed $$tempfile > /dev/null; \
 	result=`[ $$? -eq 0 ] && echo 1 || echo 0`; \

@@ -15,7 +15,7 @@ $(EBIN_DIR)/%.$(EMULATOR): %.erl
 
 $(EBIN_DIR)/%.escript: %.escript
 	cp $< $@
-	
+
 all: $(ESCRIPT_TARGET) $(EBIN_DIR) compile 
 
 compile: $(EBIN_FILES)

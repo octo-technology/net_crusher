@@ -16,8 +16,7 @@ compile: $(EBIN_DIR) $(EBIN_FILES)
 
 $(EBIN_DIR):
 	mkdir -p $(EBIN_DIR)
-	
+
 clean:
 	rm -rf $(EBIN_DIR)
 	@rm -f erl_crash.dump
-	

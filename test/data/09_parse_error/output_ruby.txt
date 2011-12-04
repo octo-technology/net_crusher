@@ -1,8 +1,0 @@
-09_parse_error.rb::in `run_file': compile error (SyntaxError)
-09_parse_error.rb:: syntax error, unexpected ')'
-12 +)( 34
-     ^
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb::in `each'
-	from ../../../net_crusher/net_crusher.rb::in `run'
-	from ../../../net_crusher/net_crusher.rb:

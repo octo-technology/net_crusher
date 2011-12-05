@@ -2,6 +2,7 @@
 [             unknown] quote and simple quote
 [             unknown] value
 [             unknown] value
+[             unknown] value 2
 [             unknown] value
 [             unknown] value
 [             unknown] value
@@ -22,5 +23,8 @@
 [             unknown] 1237
 [             unknown] array=["a",
                                                                            "b"], int=1, str=test.
+[             unknown] 8
+[             unknown] this is a value
+[             unknown] this is a value
 [       AssertMonitor] Assert ok 0
 [                root] End

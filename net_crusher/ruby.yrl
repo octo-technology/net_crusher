@@ -127,6 +127,8 @@ command -> if expr crs commands else crs commands end crs : {void, { element(2, 
 
 command -> begin crs commands end while expr crs : { void, { element(2, '$1'), erlang_statment, statment, expr_do_while, [{evaluable_bool, '$6'}, {commands, {block, '$3'}}]}}.
 
+command -> symbol '=' expr crs : { void, { element(3, '$1'), erlang_statment, vars, cmd_s, [{string, [{string, element(2, '$1')}]}, {string, '$3'}]}}.
+
 Erlang code.
 
 -export([scan/1, scan_file/1, parse_str/2, parse_file/1, post_process/1]).

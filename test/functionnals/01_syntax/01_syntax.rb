@@ -20,6 +20,7 @@ log 0, "quote and simple quote"
 s "toto", "value"
 log 0, g("toto")
 log 0, toto
+log 0, "#{toto} 2"
 
 s 'toto', 'value'
 log 0, g('toto')
@@ -46,3 +47,10 @@ log(0, (((g('int')) + ((2)))))
 log 0, int + 3
 
 logf 0, "array=~p, int=~p, str=~s.", [["a", "b"], 1, "test"]
+
+x = 5 + 3
+log 0, x
+x = "this is a value"
+log 0, x
+y = g('x')
+log 0, y

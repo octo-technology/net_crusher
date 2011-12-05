@@ -81,7 +81,8 @@ args -> expr : [ '$1' ].
 args -> expr ',' args : [ '$1' | '$3' ].
 args -> args block : '$1' ++ ['$2'].
 
-command -> function_call crs  : '$1'.
+command -> function_call : '$1'.
+command -> function_call crs : '$1'.
 expr -> function_call : {function, '$1'}.
 
 expr -> true : { bool, true }.
@@ -116,7 +117,9 @@ map_content -> map_elem ',' map_content : ['$1' | '$3'].
 
 map_elem -> expr '=' '>' expr : {'$1', '$4'}.
 
+command -> if expr then commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$4'}}]}}.
 command -> if expr then crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$5'}}]}}.
+command -> if expr crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$4'}}]}}.
 command -> begin crs commands end while expr crs : { void, { element(2, '$1'), erlang_statment, statment, expr_do_while, [{evaluable_bool, '$6'}, {commands, {block, '$3'}}]}}.
 
 Erlang code.
@@ -155,6 +158,7 @@ scan_file(FileName) ->
   scan(binary_to_list(File)).
 
 post_process({ok, L, K}) -> {ok, post_process(L), K};
+post_process([{func_call_start, LineNumber, "if"} | T]) -> [{'if', LineNumber}, {'(', LineNumber} | post_process(T)];
 post_process([{func_call_start, LineNumber, Value} | T]) -> [{'func_call_start', Value, LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "if"} | T]) -> [{'if', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "then"} | T]) -> [{'then', LineNumber} | post_process(T)];

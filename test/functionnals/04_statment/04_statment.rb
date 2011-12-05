@@ -40,6 +40,17 @@ if 1 < 2 then
   log 0, "ok"
 end
 
+if 1 < 2
+  log 0, "ok2"
+end
+
+if 1 < 2 then log(0, "ok3") end
+
+if (1 < 2) then
+  log 0, "ok4"
+end
+
 if 1 > 2 then
   log 0, "ko"
 end
+

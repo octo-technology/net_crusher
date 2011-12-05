@@ -20,5 +20,8 @@
 [             unknown] z = 4
 [             unknown] test if
 [             unknown] ok
+[             unknown] ok2
+[             unknown] ok3
+[             unknown] ok4
 [       AssertMonitor] Assert ok 0
 [                root] End

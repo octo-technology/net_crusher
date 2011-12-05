@@ -22,6 +22,8 @@ log 0, g("toto")
 
 s 'toto', 'value'
 log 0, g('toto')
+log(0, g('toto'))
+log(0, (g('toto')))
 
 log 0, "int to string"
 log 0, "1"
@@ -33,5 +35,12 @@ log 0, "#{1 + 2} #{g('toto')}"
 
 s "int", 1234
 log 0, "a_#{g('int') + 10}_b"
+log 0, g('int') + 2
+log 0, (g('int') + 2)
+log(0, (g('int') + 2))
+log (0, (g('int') + 2))
+log (0, (      g('int') + 2)   )
+log(0, ((g('int')) + 2))
+log(0, (((g('int')) + 2)))
 
 logf 0, "array=~p, int=~p, str=~s.", [["a", "b"], 1, "test"]

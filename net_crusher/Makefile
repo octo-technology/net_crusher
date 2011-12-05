@@ -30,7 +30,7 @@ $(CONFIG_FILES_TARGET): $(CONFIG_FILES)
 
 compile: $(EBIN_FILES) $(EBIN_DIR)/funcs.dump
 
-ruby.erl: ruby.yrl
+ruby.erl: ruby.yrl Makefile
 	$(ERL) -eval 'yecc:file("ruby").' -eval 'init:stop().' -noshell -noinput
   
 $(EBIN_DIR):

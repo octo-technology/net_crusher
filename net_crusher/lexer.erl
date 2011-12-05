@@ -62,6 +62,7 @@ parse(Str, LineNumber) ->
       {Token, Tail} = parse_with_regex(Current ++ " ", LineNumber, [
         {"^([0-9]+)[^0-9\\.]", fun(S, L) -> {integer, L, list_to_integer(S)} end},
         {"^([0-9\\.]+)[^0-9\\.]", fun(S, L) -> {float, L, list_to_float(S)} end},
+        {"^([a-zA-Z0-9_]+\\s*\\()", fun(S, L) -> {func_call_start, L, string:strip(string:substr(S, 1, length(S) - 1), right)} end},
         {"^([a-zA-Z0-9_]+)[^a-zA-Z0-9_]", fun(S, L) -> {atom, L, S} end}
         ]),
       [Token | parse(Tail, LineNumber)]

@@ -28,19 +28,20 @@ to_i
 to_s
 true
 false
+func_call_start
 
 'symbol'
 'integer'
 'string'
 'cr'
 ';'
+'('
+')'
 ','
 '{'
 '}'
 '['
 ']'
-'('
-')'
 '='
 '<'
 '>'
@@ -51,6 +52,7 @@ false
 .
 
 Rootsymbol root.
+
 
 root -> crs root : '$2'.
 root -> commands : {commands, '$1'}.
@@ -66,11 +68,12 @@ commands -> command : ['$1'].
 block -> do crs commands end : { block, '$3' }.
 block -> do commands end : { block, '$3' }.
 
-function_call -> function '(' ')': { element(1, '$1'), function_call, element(2, '$1'), []}.
-function_call -> function '(' args ')': { element(1, '$1'), function_call, element(2, '$1'), '$3'}.
+function_call -> func_call_start ')': { element(3, '$1'), function_call, element(2, '$1'), []}.
+function_call -> func_call_start args ')': { element(3, '$1'), function_call, element(2, '$1'), '$2'}.
+function_call -> func_call_start args ')' block : { element(3, '$1'), function_call, element(2, '$1'), '$2' ++ ['$4'] }.
+
 function_call -> function : { element(1, '$1'), function_call, element(2, '$1'), []}.
 function_call -> function args : { element(1, '$1'), function_call, element(2, '$1'), '$2'}.
-function_call -> function '(' args ')' block : { element(1, '$1'), function_call, element(2, '$1'), '$3' ++ ['$5'] }.
 
 function -> symbol : { element(3, '$1'), element(2, '$1') }.
 
@@ -83,6 +86,7 @@ expr -> function_call : {function, '$1'}.
 
 expr -> true : { bool, true }.
 expr -> false : { bool, false }.
+expr -> '(' expr ')' : '$2'.
 expr -> string : process_string('$1').
 expr -> expr '.' 'to_s' : '$1'.
 expr -> expr '.' 'to_i' : '$1'.
@@ -151,6 +155,7 @@ scan_file(FileName) ->
   scan(binary_to_list(File)).
 
 post_process({ok, L, K}) -> {ok, post_process(L), K};
+post_process([{func_call_start, LineNumber, Value} | T]) -> [{'func_call_start', Value, LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "if"} | T]) -> [{'if', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "then"} | T]) -> [{'then', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "do"} | T]) -> [{'do', LineNumber} | post_process(T)];

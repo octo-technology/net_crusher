@@ -10,8 +10,6 @@
 [             unknown] k = 8
 [             unknown] k = 9
 [             unknown] k = 10
-[             unknown] z = 1
-[             unknown] z = 2
 [             unknown] testing while
 [             unknown] z = 0
 [             unknown] z = 1

@@ -71,7 +71,6 @@ block -> do commands end : { block, '$3' }.
 
 function_call -> func_call_start ')': { element(3, '$1'), function_call, element(2, '$1'), []}.
 function_call -> func_call_start args ')': { element(3, '$1'), function_call, element(2, '$1'), '$2'}.
-function_call -> func_call_start args ')' block : { element(3, '$1'), function_call, element(2, '$1'), '$2' ++ ['$4'] }.
 
 function_call -> function : { element(1, '$1'), function_call, element(2, '$1'), []}.
 function_call -> function args : { element(1, '$1'), function_call, element(2, '$1'), '$2' }.

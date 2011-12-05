@@ -33,20 +33,23 @@ run_command({ReturnType, {Line, erlang_statment, Module, Function, Params}}) ->
   % io:fwrite("Running builtin function ~p:~p on ~p ~n", [Module, Function, Params]),
   {ReturnType, run_function(Line, {erlang_function, Module, Function}, Params)};
 run_command({Line, function_call, FunctionName, Params}) ->
-  {_, {ReturnType, F, TypeOfParams}} = case lists:keyfind(FunctionName, 1, get(interpreter_funcs)) of
-    false -> throw({line, Line, {missing_function, FunctionName, erlang:get_stacktrace()}});
-    V -> V
-  end,
-  case length(Params) == length(TypeOfParams) of
-    false -> throw({line, Line, {wrong_number_of_args, FunctionName, erlang:get_stacktrace()}});
-    true -> noop
-  end,
-  {[], MixedParams} = lists:foldl(fun(ParamType, {[Param | Tail], Out}) ->
-    {Tail, Out ++ [{ParamType, Param}]}
-  end,
-  {Params, []}, TypeOfParams),
-  % io:fwrite("Running function ~p on ~p ~n", [F, MixedParams]),
-  {ReturnType, run_function(Line, F, MixedParams)}.
+  case lists:keyfind(FunctionName, 1, get(interpreter_funcs)) of
+    false -> case length(Params) of
+      0 -> {string, vars:str_g(FunctionName)};
+      _ -> throw({line, Line, {missing_function, FunctionName, erlang:get_stacktrace()}})
+    end;
+    {_, {ReturnType, F, TypeOfParams}} -> 
+      case length(Params) == length(TypeOfParams) of
+        false -> throw({line, Line, {wrong_number_of_args, FunctionName, erlang:get_stacktrace()}});
+        true -> noop
+      end,
+      {[], MixedParams} = lists:foldl(fun(ParamType, {[Param | Tail], Out}) ->
+        {Tail, Out ++ [{ParamType, Param}]}
+      end,
+      {Params, []}, TypeOfParams),
+      % io:fwrite("Running function ~p on ~p ~n", [F, MixedParams]),
+      {ReturnType, run_function(Line, F, MixedParams)}
+  end.
 
 run_function(Line, {erlang_function, Module, Function}, Params) ->
   try

@@ -4,6 +4,7 @@
 [             unknown] value
 [             unknown] value
 [             unknown] value
+[             unknown] value
 [             unknown] int to string
 [             unknown] 1
 [             unknown] inside double quote
@@ -18,6 +19,7 @@
 [             unknown] 1236
 [             unknown] 1236
 [             unknown] 1236
+[             unknown] 1237
 [             unknown] array=["a",
                                                                            "b"], int=1, str=test.
 [       AssertMonitor] Assert ok 0

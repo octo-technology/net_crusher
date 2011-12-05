@@ -21,6 +21,10 @@ loop 1, 10 do
   log 0, "k = #{g('k')}"
 end
 
+loop (1, 2) do
+  log 0, "z = #{g('k')}"
+end
+
 log 0, "testing while"
 
 s 'z', 0

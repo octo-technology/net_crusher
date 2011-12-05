@@ -70,8 +70,13 @@ function_call -> function '(' ')': { element(1, '$1'), function_call, element(2,
 function_call -> function '(' args ')': { element(1, '$1'), function_call, element(2, '$1'), '$3'}.
 function_call -> function : { element(1, '$1'), function_call, element(2, '$1'), []}.
 function_call -> function args : { element(1, '$1'), function_call, element(2, '$1'), '$2'}.
+function_call -> function '(' args ')' block : { element(1, '$1'), function_call, element(2, '$1'), '$3' ++ ['$5'] }.
 
 function -> symbol : { element(3, '$1'), element(2, '$1') }.
+
+args -> expr : [ '$1' ].
+args -> expr ',' args : [ '$1' | '$3' ].
+args -> args block : '$1' ++ ['$2'].
 
 command -> function_call crs  : '$1'.
 expr -> function_call : {function, '$1'}.
@@ -109,10 +114,6 @@ map_elem -> expr '=' '>' expr : {'$1', '$4'}.
 
 command -> if expr then crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$5'}}]}}.
 command -> begin crs commands end while expr crs : { void, { element(2, '$1'), erlang_statment, statment, expr_do_while, [{evaluable_bool, '$6'}, {commands, {block, '$3'}}]}}.
-
-args -> expr : [ '$1' ].
-args -> expr ',' args : [ '$1' | '$3' ].
-args -> args block : '$1' ++ ['$2'].
 
 Erlang code.
 

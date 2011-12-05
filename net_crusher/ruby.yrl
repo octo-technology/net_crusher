@@ -74,18 +74,18 @@ function_call -> func_call_start args ')': { element(3, '$1'), function_call, el
 function_call -> func_call_start args ')' block : { element(3, '$1'), function_call, element(2, '$1'), '$2' ++ ['$4'] }.
 
 function_call -> function : { element(1, '$1'), function_call, element(2, '$1'), []}.
-function_call -> function args : { element(1, '$1'), function_call, element(2, '$1'), '$2'}.
+function_call -> function args : { element(1, '$1'), function_call, element(2, '$1'), '$2' }.
+function_call -> function args block : { element(1, '$1'), function_call, element(2, '$1'), '$2' ++ ['$3'] }.
 
 function -> symbol : { element(3, '$1'), element(2, '$1') }.
 
 args -> expr : [ '$1' ].
 args -> expr ',' args : [ '$1' | '$3' ].
-args -> args block : '$1' ++ ['$2'].
 
 command -> function_call : '$1'.
 command -> function_call crs : '$1'.
-expr -> function_call : {function, '$1'}.
 
+expr -> function_call : {function, '$1'}.
 expr -> true : { bool, true }.
 expr -> false : { bool, false }.
 expr -> '(' expr ')' : '$2'.

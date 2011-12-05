@@ -22,7 +22,7 @@
   sub_process_light/3,
 
   cmd_execute/1,
-  cmd_execute_and_wait/1,
+  cmd_wait_for_childs_end/0,
   cmd_fork/2,
   cmd_fork_light/2,
   cmd_fork_distributed/2,
@@ -190,10 +190,6 @@ execute(FileName, Commands) ->
     X -> X
   end.
 
-cmd_execute_and_wait(StrFileName) ->
-  cmd_execute(StrFileName),
-  wait_for_childs_end().
-
 sub_process(Name, FileName, Map) ->
   lists:map(fun({K, V}) -> put(K, V) end, Map),
   vars:cmd_s("name", Name),
@@ -201,13 +197,13 @@ sub_process(Name, FileName, Map) ->
   vars:cmd_s("hostname", Hostname),
   tools:init_rand(Name),
   cmd_execute(FileName),
-  wait_for_childs_end().
+  cmd_wait_for_childs_end().
 
 sub_process_light(Name, FileName, Map) ->
   lists:map(fun({K, V}) -> put(K, V) end, Map),
   vars:cmd_s("name", Name),
   cmd_execute(FileName),
-  wait_for_childs_end().
+  cmd_wait_for_childs_end().
 
 fork(Node, StrName, StrFileName) ->
   spawn_child_with_monitor(Node, ?MODULE, sub_process,
@@ -286,7 +282,7 @@ stop() ->
   misc:cmd_sleep_ms(100),
   mnesia:stop().
 
-wait_for_childs_end() ->
+cmd_wait_for_childs_end() ->
   case get_nb_child_to_wait() of
     0 -> logger:cmd_log(4, "No child to wait");
     _ ->

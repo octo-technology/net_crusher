@@ -190,35 +190,35 @@ execute(FileName, Commands) ->
     X -> X
   end.
 
-sub_process(Name, FileName, Map) ->
+sub_process(Name, Blk, Map) ->
   lists:map(fun({K, V}) -> put(K, V) end, Map),
   vars:cmd_s("name", Name),
   {ok, Hostname} = inet:gethostname(),
   vars:cmd_s("hostname", Hostname),
   tools:init_rand(Name),
-  cmd_execute(FileName),
+  Blk(),
   cmd_wait_for_childs_end().
 
-sub_process_light(Name, FileName, Map) ->
+sub_process_light(Name, Blk, Map) ->
   lists:map(fun({K, V}) -> put(K, V) end, Map),
   vars:cmd_s("name", Name),
-  cmd_execute(FileName),
+  Blk(),
   cmd_wait_for_childs_end().
 
-fork(Node, StrName, StrFileName) ->
+fork(Node, StrName, Blk) ->
   spawn_child_with_monitor(Node, ?MODULE, sub_process,
-                           [StrName, StrFileName, get()]).
+                           [StrName, Blk, get()]).
 
-cmd_fork_light(StrName, StrFileName) ->
-  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, StrFileName, get()]), "cmd_fork_light").
+cmd_fork_light(StrName, Blk) ->
+  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, Blk, get()]), "cmd_fork_light").
 
-cmd_fork(StrName, StrFileName) ->
-  ?TIME(fork(node(), StrName, StrFileName), "cmd_fork").
+cmd_fork(StrName, Blk) ->
+  ?TIME(fork(node(), StrName, Blk), "cmd_fork").
 
-cmd_fork_distributed(StrName, StrFileName) ->
+cmd_fork_distributed(StrName, Blk) ->
   fork(tools:sync_msg(global:whereis_name(process_fork_handler),
                       node, get_node_for_fork, {StrName}),
-       StrName, StrFileName).
+       StrName, Blk).
 
 init_node(FileName) ->
   inets:start(),
@@ -262,7 +262,7 @@ run(ScriptDir, FileName) ->
   vars:cmd_set_name("root"),
 
   ProcessId = spawn_with_monitor(node(), ?MODULE, sub_process,
-                                 ["unknown", FileName, get()]),
+                                 ["unknown", fun() -> cmd_execute(FileName) end, get()]),
   wait_for_process_end(ProcessId),
 
   stop().

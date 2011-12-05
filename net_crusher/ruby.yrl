@@ -20,6 +20,7 @@ Terminals
 
 if
 then
+else
 do
 end
 begin
@@ -120,6 +121,10 @@ map_elem -> expr '=' '>' expr : {'$1', '$4'}.
 command -> if expr then commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$4'}}]}}.
 command -> if expr then crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$5'}}]}}.
 command -> if expr crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$4'}}]}}.
+
+command -> if expr then crs commands else crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if_else, [{bool, '$2'}, {commands, {block, '$5'}}, {commands, {block, '$8'}}]}}.
+command -> if expr crs commands else crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if_else, [{bool, '$2'}, {commands, {block, '$4'}}, {commands, {block, '$7'}}]}}.
+
 command -> begin crs commands end while expr crs : { void, { element(2, '$1'), erlang_statment, statment, expr_do_while, [{evaluable_bool, '$6'}, {commands, {block, '$3'}}]}}.
 
 Erlang code.
@@ -162,6 +167,7 @@ post_process([{func_call_start, LineNumber, "if"} | T]) -> [{'if', LineNumber}, 
 post_process([{func_call_start, LineNumber, Value} | T]) -> [{'func_call_start', Value, LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "if"} | T]) -> [{'if', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "then"} | T]) -> [{'then', LineNumber} | post_process(T)];
+post_process([{atom, LineNumber, "else"} | T]) -> [{'else', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "do"} | T]) -> [{'do', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "end"} | T]) -> [{'end', LineNumber} | post_process(T)];
 post_process([{atom, LineNumber, "begin"} | T]) -> [{'begin', LineNumber} | post_process(T)];

@@ -18,6 +18,7 @@
 
 -export([
   expr_if/2,
+  expr_if_else/3,
   expr_do_while/2,
 
   make_call/2,
@@ -30,6 +31,9 @@ make_call(StrModule, StrFunction) ->
 
 expr_if(Cond, Blk) when Cond -> Blk();
 expr_if(Cond, _) when not Cond -> noop.
+
+expr_if_else(Cond, BlkOk, _BlkKo) when Cond -> BlkOk();
+expr_if_else(Cond, _BlkOk, BlkKo) when not Cond -> BlkKo().
   
 expr_do_while(Cond, Blk) ->
   Blk(),

@@ -54,3 +54,21 @@ if 1 > 2 then
   log 0, "ko"
 end
 
+if 1 > 2 then
+  log 0, "ko"
+else
+  log 0, "ok5"
+end
+
+if 1 > 2
+  log 0, "ko"
+else
+  log 0, "ok6"
+end
+
+if 1 < 2 then
+  log 0, "ok7"
+else
+  log 0, "ko"
+end
+

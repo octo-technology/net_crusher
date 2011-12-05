@@ -23,5 +23,8 @@
 [             unknown] ok2
 [             unknown] ok3
 [             unknown] ok4
+[             unknown] ok5
+[             unknown] ok6
+[             unknown] ok7
 [       AssertMonitor] Assert ok 0
 [                root] End

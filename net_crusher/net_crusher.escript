@@ -29,4 +29,4 @@ main([FileName | Argv]) ->
   code:add_path(ScriptDir),
   put(argv, Argv),
   put("script_dir", ScriptDir),
-  runtime:run(FileName).
+  runtime:run(ScriptDir, FileName).

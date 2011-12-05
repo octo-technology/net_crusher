@@ -17,7 +17,7 @@
 -module(runtime).
 
 -export([
-  run/1,
+  run/2,
   sub_process/3,
   sub_process_light/3,
 
@@ -186,6 +186,7 @@ execute(FileName, Commands) ->
           {line, Line, LineStr},
           {last_http_url, get(last_http_url)}
       }});
+    {'EXIT', E} -> throw(E);
     X -> X
   end.
 
@@ -231,7 +232,16 @@ init_node(FileName) ->
   tools_http:start_void_http_monitor(),
   tools:init_rand(FileName).
 
-run(FileName) ->
+run(ScriptDir, FileName) ->
+  FuncFile = ScriptDir ++ "/funcs.dump",
+  {ok, Content} = file:read_file(FuncFile),
+  {ok, Parsed, _} = erl_scan:string(binary_to_list(Content) ++ "."),
+  {ok, Result} = erl_parse:parse_term(Parsed),
+
+  %io:format("Funcs dump~n~p~n", [Result]),
+  
+  put(interpreter_funcs, Result),
+
   io:setopts([{encoding, utf8}]),
   logger:cmd_set_log_level(0),
 

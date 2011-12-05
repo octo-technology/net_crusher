@@ -19,9 +19,12 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 main(Args) ->
-  [BinDirectory, OutputDir | Modules] = Args,
+  [BinDirectory, OutputFile | Modules] = Args,
   code:add_path(BinDirectory),
-  io:fwrite("~p\n", [scanner:generate_grammar(ruby, OutputDir, to_atoms(Modules))]).
+  {ok, IoDevice} = file:open(OutputFile, [write]),
+  io:format(IoDevice, "~p", [erlang_functions_scanner:scan_modules(to_atoms(Modules))]),
+  file:close(IoDevice).
+  
   
 to_atoms([H | T]) -> [list_to_atom(H) | to_atoms(T)];
 to_atoms([]) -> [].

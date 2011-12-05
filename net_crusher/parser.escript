@@ -25,4 +25,5 @@ main([FileName]) ->
   end,
   ScriptDir = filename:dirname(RealFileName),
   code:add_path(ScriptDir),
+  io:fwrite("Result of lexing and post processing ~s\n~p\n", [FileName, ruby:post_process(ruby:scan_file(FileName))]),
   io:fwrite("Result of parsing ~s\n~p\n", [FileName, ruby:parse_file(FileName)]).

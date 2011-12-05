@@ -23,25 +23,50 @@
 run_commands({commands, L}) ->
    run_commands(L);
 run_commands([H | T]) ->
+  % io:fwrite("Running line ~p~n", [H]),
   run_command(H),
   run_commands(T);
 run_commands([]) ->
   ok.
 
-run_command({Line, Module, Function, Params}) ->
+run_command({ReturnType, {Line, erlang_statment, Module, Function, Params}}) ->
+  % io:fwrite("Running builtin function ~p:~p on ~p ~n", [Module, Function, Params]),
+  {ReturnType, run_function(Line, {erlang_function, Module, Function}, Params)};
+run_command({Line, function_call, FunctionName, Params}) ->
+  {_, {ReturnType, F, TypeOfParams}} = case lists:keyfind(FunctionName, 1, get(interpreter_funcs)) of
+    false -> throw({line, Line, {missing_function, FunctionName, erlang:get_stacktrace()}});
+    V -> V
+  end,
+  case length(Params) == length(TypeOfParams) of
+    false -> throw({line, Line, {wrong_number_of_args, FunctionName, erlang:get_stacktrace()}});
+    true -> noop
+  end,
+  {[], MixedParams} = lists:foldl(fun(ParamType, {[Param | Tail], Out}) ->
+    {Tail, Out ++ [{ParamType, Param}]}
+  end,
+  {Params, []}, TypeOfParams),
+  % io:fwrite("Running function ~p on ~p ~n", [F, MixedParams]),
+  {ReturnType, run_function(Line, F, MixedParams)}.
+
+run_function(Line, {erlang_function, Module, Function}, Params) ->
   try
-    erlang:apply(Module, Function, lists:map(fun process_params/1, Params))
+    ProcesedParams = lists:map(fun process_params/1, Params),
+    % io:fwrite("Running erlang function ~p:~p (~p)~n", [Module, Function, ProcesedParams]),
+    erlang:apply(Module, Function, ProcesedParams)
   catch
     {line, Line2, E} -> throw({line, Line2, {E, erlang:get_stacktrace()}});
     _:Term -> throw({line, Line, {Term, erlang:get_stacktrace()}})
   end.
 
-exec_function({integer, Command}) -> {integer, run_command(Command)};
-exec_function({string, Command}) -> {string, [{string, run_command(Command)}]};
-exec_function({bool, Command}) -> {bool, run_command(Command)};
-exec_function({map, Command}) -> {map, run_command(Command)}.
+exec_function(Command) -> 
+  Result = run_command(Command),
+  % io:fwrite("Return : ~p~n", [Result]),
+  process_function_result(Result).
 
-process_params({commands, P}) -> fun() -> run_commands({commands, P}) end;
+process_function_result({string, Value}) -> {string, [{string, Value}]};
+process_function_result({Atom, Value}) -> {Atom, Value}.
+
+process_params({commands, {block, P}}) -> fun() -> run_commands({commands, P}) end;
 process_params({string, P}) -> get_string(P);
 process_params({integer, P}) -> get_integer(P);
 process_params({bool, P}) -> get_bool(P);

@@ -31,7 +31,7 @@ lex(Str, LineNumber) ->
 parse(Str, LineNumber) ->
   case string:strip(Str, left) of
     "" -> [LineNumber];
-    [$\n | Tail] -> parse(Tail, LineNumber + 1);
+    [$\n | Tail] -> [{cr, LineNumber} | parse(Tail, LineNumber + 1)];
     [$\r | Tail] -> parse(Tail, LineNumber);
     [$. | Tail] -> [{'.', LineNumber} | parse(Tail, LineNumber)];
     [$, | Tail] -> [{',', LineNumber} | parse(Tail, LineNumber)];
@@ -51,7 +51,7 @@ parse(Str, LineNumber) ->
     [$] | Tail] -> [{']', LineNumber} | parse(Tail, LineNumber)];
     [$# | Tail] ->
        {_, After} = find_delimiter_and_unescape($\n, Tail),
-      parse(After, LineNumber + 1);
+      [{cr, LineNumber} | parse(After, LineNumber + 1)];
     [$" | Tail] ->
       {ParsedString, After} = find_delimiter_and_unescape($", Tail),
       [{string, LineNumber, ParsedString} | parse(After, LineNumber)];

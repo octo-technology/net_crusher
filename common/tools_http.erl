@@ -26,7 +26,6 @@
 
   create_http_get/2,
   create_http_post/3,
-  create_http_put/3,
 
   read_http_data_binary/1,
   read_http_data_decode/1,
@@ -130,14 +129,20 @@ send_socket_binary(Sock, Data) ->
       other
   end.
 
+dump_headers([{Name, Value} | Tail]) ->
+  io_lib:format("~s: ~s\r\n", [Name, Value]) ++ dump_headers(Tail);
+dump_headers([]) -> "".
+
+add_default_headers(Headers) ->
+  [{"Accept", "*/*"}, {"User-Agent", "Erlang"} | Headers].
+  
 create_http_post(Path, Headers, PostData) ->
-  io_lib:format("POST ~s HTTP/1.1\r\nContent-Length: ~w\r\n~sAccept: */*\r\nUser-Agent: erlang\r\n\r\n~s", [Path, string:len(PostData), Headers, PostData]).
+  HeadersStr = dump_headers(add_default_headers([{"Content-Length", integer_to_list(string:len(PostData))} | Headers])),
+  io_lib:format("POST ~s HTTP/1.1\r\n~s\r\n~s", [Path, HeadersStr, PostData]).
 
 create_http_get(Path, Headers) ->
-  io_lib:format("GET ~s HTTP/1.1\r\n~sAccept: */*\r\nUser-Agent: erlang\r\n\r\n", [Path, Headers]).
-
-create_http_put(Path, Headers, PostData) ->
-  io_lib:format("PUT ~s HTTP/1.1\r\nContent-Length: ~w\r\n~sAccept: */*\r\nUser-Agent: erlang\r\n\r\n~s", [Path, string:len(PostData), Headers, PostData]).
+  HeadersStr = dump_headers(add_default_headers(Headers)),
+  io_lib:format("GET ~s HTTP/1.1\r\n~s\r\n", [Path, HeadersStr]).
 
 recv(Sock, Data) when is_tuple(Sock) -> ssl:recv(Sock, Data);
 recv(Sock, Data) -> gen_tcp:recv(Sock, Data).

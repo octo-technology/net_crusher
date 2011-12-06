@@ -55,7 +55,7 @@ parse_string(Str) ->
   end.
 
 generate_headers(ServerAddr, Path, Cookies) ->
-  CookiesHeaders = case Cookies of
+  CookiesValue = case Cookies of
     undefined -> "";
     _ ->
       dict:fold(
@@ -70,8 +70,12 @@ generate_headers(ServerAddr, Path, Cookies) ->
           false -> Acc
         end
       end,
-      "Cookie: ",
-      Cookies) ++ "\r\n"
+      "",
+      Cookies)
   end,
-  logger:cmd_log(6, "Add cookies headers for " ++ ServerAddr ++ " " ++ Path ++ " : " ++ CookiesHeaders),
-  CookiesHeaders.
+  case CookiesValue of
+    "" ->
+      logger:cmd_log(6, "Add cookies headers for " ++ ServerAddr ++ " " ++ Path ++ " : " ++ CookiesValue),
+      [];
+    V -> [{"Cookie", V}]
+  end.

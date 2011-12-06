@@ -21,6 +21,7 @@
   cmd_http_get/1,
   cmd_http_post_form/2,
   cmd_http_post_json/2,
+  cmd_add_http_header_on_next_request/2,
   cmd_assert_last_http_response_code/1,
   cmd_assert_last_http_response_code_body/2,
   cmd_assert_last_http_response_body_contains/1,
@@ -36,15 +37,19 @@
   cmd_set_basic_auth/3
 ]).
 
-cmd_http_get(StrUrl) ->
-  cmd_http_get(StrUrl, "").
+cmd_add_http_header_on_next_request(StrHeaderName, StrHeaderValue) ->
+  Current = case get(http_headers_for_next_request) of
+    undefined -> [];
+    V -> V
+  end,
+  put(http_headers_for_next_request, [{StrHeaderName, StrHeaderValue} | Current]).
 
-cmd_http_get(StrUrl, StrHeaders) ->
+cmd_http_get(StrUrl) ->
   put(last_http_url, StrUrl),
   {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP GET: ~p", [StrUrl]),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, StrHeaders ++ generate_headers(ServerAddr, ServerPort, Path)),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path)),
   logger:cmd_logf(5, "HTTP GET Result: ~p (~p)", [StrUrl, Code]),
   tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
@@ -56,7 +61,8 @@ cmd_http_post_form(StrUrl, MapParams) ->
   Params = encode_map(MapParams),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP POST: ~p (~p)", [StrUrl, MapParams]),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/x-www-form-urlencoded\r\n"), Params),
+  cmd_add_http_header_on_next_request("Content-Type", "application/x-www-form-urlencoded"),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), Params),
   logger:cmd_logf(5, "HTTP POST Result: ~p (~p)", [StrUrl, Code]),
   tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
@@ -67,7 +73,8 @@ cmd_http_post_json(StrUrl, StrJson) ->
   {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
   Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
   logger:cmd_logf(5, "HTTP POST (JSON): ~p : ~p", [StrUrl, StrJson]),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path, "Content-Type: application/json\r\n"), StrJson),
+  cmd_add_http_header_on_next_request("Content-Type", "application/json"),
+  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), StrJson),
   logger:cmd_logf(5, "HTTP POST (JSON) Result: ~p (~p)", [StrUrl, Code]),
   tools_http:close_socket(NewSocket, Headers),
   process_cookie(ServerAddr, Headers),
@@ -99,26 +106,25 @@ cmd_set_basic_auth(StrUrl, StrLogin, StrPassword) ->
   set_basic_auth(ServerAddr, {StrLogin, StrPassword}).
   
 generate_headers(ServerAddr, ServerPort, Path) ->
-  generate_headers(ServerAddr, ServerPort, Path, "").
-
-generate_headers(ServerAddr, ServerPort, Path, Header) ->
-  "Host: " ++ ServerAddr ++
+  Host = ServerAddr ++
   case ServerPort of
     80 -> "";
     _ -> ":" ++ integer_to_list(ServerPort)
-  end
-  ++ "\r\n" ++
-  "Connection: keep-alive\r\n" ++
-  cookies:generate_headers(ServerAddr, Path, get("cookies"))
-  ++
-  basic_auth(ServerAddr)
-  ++
-  Header.
-
-basic_auth(ServerAddr) ->
+  end,
+  UserHeaders = case get(http_headers_for_next_request) of
+    undefined -> [];
+    V -> V
+  end,
+  put(http_headers_for_next_request, undefined),
+  List = [{"Host", Host}, {"Connection", "keep-alive"}] ++ add_basic_auth_headers(ServerAddr) ++ cookies:generate_headers(ServerAddr, Path, get("cookies")),
+  lists:foldr(fun({K, V}, Acc) ->
+    lists:keystore(K, 1, Acc, {K, V})
+  end, List, UserHeaders).
+  
+add_basic_auth_headers(ServerAddr) ->
   case get_basic_auth(ServerAddr) of
-    undefined -> "";
-    {Login, Password} -> "Authorization: Basic " ++ binary_to_list(base64:encode(Login ++ ":" ++ Password)) ++ "\r\n"
+    undefined -> [];
+    {Login, Password} -> [{"Authorization", "Basic " ++ binary_to_list(base64:encode(Login ++ ":" ++ Password))}]
   end.
 
 process_cookie(ServerAddr, Headers) ->
@@ -250,16 +256,18 @@ save_header_value(StrUrl, HeaderName) ->
         put(last_headers_received, dict:store(HeaderName, NewHeaderMap, Map))
   end.
 
+add_header_if_other_found(StrUrl, HeaderToSearch, HeaderToAdd) ->
+  case get_header_value(StrUrl, HeaderToSearch) of
+    not_found -> noop;
+    Value -> 
+      logger:cmd_log(5, "Injecting headers: " ++ HeaderToAdd ++ ":" ++ Value),
+      cmd_add_http_header_on_next_request(HeaderToAdd, Value)
+  end.
+  
 cmd_http_get_with_last_modified(StrUrl) ->
-  Headers = lists:foldr(
-    fun({HeaderToSearch, HeaderToAdd}, Acc) ->
-      case get_header_value(StrUrl, HeaderToSearch) of
-        not_found -> Acc;
-        Value -> Acc ++ HeaderToAdd ++ ": " ++ Value ++ "\r\n"
-      end
-    end, "", [{"last-modified", "If-Modified-Since"}, {"etag", "If-None-Match"}]),
-  logger:cmd_log(5, "Injecting headers: " ++ Headers),
-  cmd_http_get(StrUrl, Headers),
+  add_header_if_other_found(StrUrl, "last-modified", "If-Modified-Since"),
+  add_header_if_other_found(StrUrl, "etag", "If-None-Match"),
+  cmd_http_get(StrUrl),
   save_header_value(StrUrl, "last-modified"),
   save_header_value(StrUrl, "etag").
 

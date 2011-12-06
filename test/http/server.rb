@@ -2,6 +2,8 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 
+enable :sessions
+
 get '/hello' do
   "42"
 end
@@ -31,6 +33,15 @@ end
 
 get '/end_redirect' do
   "out_of_redirect"
+end
+
+get '/start_session/:key/:value' do
+  session[params[:key]] = params[:value]
+  body "42"
+end
+
+get '/get_session/:name' do
+  body session[params[:name]]
 end
 
 get '/protected' do

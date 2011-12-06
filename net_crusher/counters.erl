@@ -17,8 +17,8 @@
 -module(counters).
 
 -export([
-  cmd_incr_counter/1,
-  int_read_counter/1,
+  cmd_counter_incr/1,
+  int_counter_read/1,
   
   counter_manager/0,
   
@@ -26,8 +26,8 @@
   stop_counter_manager/0
 ]).
 
-cmd_incr_counter(StrCounterName) ->
-  global:whereis_name(counter_manager) ! {incr_counter, StrCounterName}.
+cmd_counter_incr(StrCounterName) ->
+  global:whereis_name(counter_manager) ! {counter_incr, StrCounterName}.
 
 start_counter_manager() ->
   global:register_name(counter_manager,
@@ -36,11 +36,8 @@ start_counter_manager() ->
                                                   ["CounterManager",
                                                    fun() -> counters:counter_manager() end])).
 
-int_read_counter(StrCounterName) ->
-  global:whereis_name(counter_manager) ! {read_counter, self(), StrCounterName},
-  receive
-    {value, StrCounterName, V} -> V
-  end.
+int_counter_read(StrCounterName) ->
+  tools:sync_msg(global:whereis_name(counter_manager), counter_value, counter_read, StrCounterName).
   
 stop_counter_manager() ->
   global:whereis_name(counter_manager) ! halt.
@@ -50,18 +47,18 @@ counter_manager() ->
   
 counter_manager(Dict) ->
   receive
-    {incr_counter, CounterName} ->
+    {counter_incr, CounterName} ->
       Value = case dict:find(CounterName, Dict) of
         error -> 0;
         {ok, V} -> V
       end,
       counter_manager(dict:store(CounterName, Value + 1, Dict));
-    {read_counter, Target, CounterName} ->
+    {counter_read, Target, CounterName} ->
       Result = case dict:find(CounterName, Dict) of
         error -> -1;
         {ok, V} -> V
       end,
-      Target ! {value, CounterName, Result},
+      Target ! {counter_value, Result},
       counter_manager(Dict);
     halt ->
       noop

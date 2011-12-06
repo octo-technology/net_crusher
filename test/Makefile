@@ -1,4 +1,4 @@
-SUBDIRS=functionnals erl
+SUBDIRS=functionnals erl http
 
 .PHONY: $(SUBDIRS)
   

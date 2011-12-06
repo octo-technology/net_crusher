@@ -50,8 +50,6 @@ log 0, "Basic auth"
 
 http_get "#{base_url}/protected"
 assert_last_http_response_code 401
-login = "titi"
-password = "toto"
-set_basic_auth "#{base_url}/protected", "login", "password"
+set_basic_auth "#{base_url}/protected", "titi", "toto"
 http_get "#{base_url}/protected"
 assert_last_http_response_code_body 200, "Basic dGl0aTp0b3Rv"

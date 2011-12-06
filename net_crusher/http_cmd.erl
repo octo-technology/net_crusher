@@ -94,18 +94,10 @@ get_basic_auth(ServerAddr) ->
       end
   end.
 
-cmd_set_basic_auth(StrUrl, StrVarNameLogin, StrVarNamePassword) ->
-  case get(StrVarNameLogin) of
-    undefined -> noop;
-    Login ->
-      case get(StrVarNamePassword) of
-        undefined -> noop;
-        Password ->
-          {ok, _, ServerAddr, _, _} = tools_http:parse_url(StrUrl ++ "/"),
-          set_basic_auth(ServerAddr, {Login, Password})
-      end
-  end.
-
+cmd_set_basic_auth(StrUrl, StrLogin, StrPassword) ->
+  {ok, _, ServerAddr, _, _} = tools_http:parse_url(StrUrl ++ "/"),
+  set_basic_auth(ServerAddr, {StrLogin, StrPassword}).
+  
 generate_headers(ServerAddr, ServerPort, Path) ->
   generate_headers(ServerAddr, ServerPort, Path, "").
 

@@ -55,7 +55,7 @@ counter_manager(Dict) ->
       counter_manager(dict:store(CounterName, Value + 1, Dict));
     {counter_read, Target, CounterName} ->
       Result = case dict:find(CounterName, Dict) of
-        error -> -1;
+        error -> 0;
         {ok, V} -> V
       end,
       Target ! {counter_value, Result},

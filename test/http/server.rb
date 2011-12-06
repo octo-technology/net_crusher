@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'json'
 
 get '/hello' do
   "42"
@@ -38,5 +39,23 @@ get '/protected' do
     body env["HTTP_AUTHORIZATION"]
   else
     status 401
+  end
+end
+
+post '/post_form' do
+  if env['CONTENT_TYPE'] == 'application/x-www-form-urlencoded'
+    body params[:p1] + "_" + params[:p2]
+  else
+    status 404
+  end
+end
+
+post '/post_json' do
+  if env['CONTENT_TYPE'] == 'application/json'
+    data = JSON.parse request.body.read
+    data['a'] = 'newValueForA'
+    body JSON.dump(data)
+  else
+    status 404
   end
 end

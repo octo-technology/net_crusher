@@ -22,6 +22,7 @@
   cmd_http_post_form/2,
   cmd_http_post_json/2,
   cmd_add_http_header_on_next_request/2,
+  cmd_catch_http_error_into_zero/1,
   cmd_assert_last_http_response_code/1,
   cmd_assert_last_http_response_code_body/2,
   cmd_assert_last_http_response_body_contains/1,
@@ -45,40 +46,46 @@ cmd_add_http_header_on_next_request(StrHeaderName, StrHeaderValue) ->
   put(http_headers_for_next_request, [{StrHeaderName, StrHeaderValue} | Current]).
 
 cmd_http_get(StrUrl) ->
-  put(last_http_url, StrUrl),
-  {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
-  Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
-  logger:cmd_logf(5, "HTTP GET: ~p", [StrUrl]),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path)),
-  logger:cmd_logf(5, "HTTP GET Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(NewSocket, Headers),
-  process_cookie(ServerAddr, Headers),
-  put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
+  manage_error(fun() ->
+    put(last_http_url, StrUrl),
+    {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
+    Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
+    logger:cmd_logf(5, "HTTP GET: ~p", [StrUrl]),
+    {ok, NewSocket, Code, Result, Headers, Body} = tools_http:get_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path)),
+    logger:cmd_logf(5, "HTTP GET Result: ~p (~p)", [StrUrl, Code]),
+    tools_http:close_socket(NewSocket, Headers),
+    process_cookie(ServerAddr, Headers),
+    put(last_http_response, {ok, Code, Result, process_headers(Headers), Body})
+  end).
 
 cmd_http_post_form(StrUrl, MapParams) ->
-  put(last_http_url, StrUrl),
-  {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
-  Params = encode_map(MapParams),
-  Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
-  logger:cmd_logf(5, "HTTP POST: ~p (~p)", [StrUrl, MapParams]),
-  cmd_add_http_header_on_next_request("Content-Type", "application/x-www-form-urlencoded"),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), Params),
-  logger:cmd_logf(5, "HTTP POST Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(NewSocket, Headers),
-  process_cookie(ServerAddr, Headers),
-  put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
+  manage_error(fun() ->
+    put(last_http_url, StrUrl),
+    {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
+    Params = encode_map(MapParams),
+    Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
+    logger:cmd_logf(5, "HTTP POST: ~p (~p)", [StrUrl, MapParams]),
+    cmd_add_http_header_on_next_request("Content-Type", "application/x-www-form-urlencoded"),
+    {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), Params),
+    logger:cmd_logf(5, "HTTP POST Result: ~p (~p)", [StrUrl, Code]),
+    tools_http:close_socket(NewSocket, Headers),
+    process_cookie(ServerAddr, Headers),
+    put(last_http_response, {ok, Code, Result, process_headers(Headers), Body})
+  end).
 
 cmd_http_post_json(StrUrl, StrJson) ->
-  put(last_http_url, StrUrl),
-  {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
-  Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
-  logger:cmd_logf(5, "HTTP POST (JSON): ~p : ~p", [StrUrl, StrJson]),
-  cmd_add_http_header_on_next_request("Content-Type", "application/json"),
-  {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), StrJson),
-  logger:cmd_logf(5, "HTTP POST (JSON) Result: ~p (~p)", [StrUrl, Code]),
-  tools_http:close_socket(NewSocket, Headers),
-  process_cookie(ServerAddr, Headers),
-  put(last_http_response, {ok, Code, Result, process_headers(Headers), Body}).
+  manage_error(fun() ->
+    put(last_http_url, StrUrl),
+    {ok, Protocol, ServerAddr, ServerPort, Path} = tools_http:parse_url(StrUrl),
+    Socket = tools_http:open_socket(Protocol, ServerAddr, ServerPort),
+    logger:cmd_logf(5, "HTTP POST (JSON): ~p : ~p", [StrUrl, StrJson]),
+    cmd_add_http_header_on_next_request("Content-Type", "application/json"),
+    {ok, NewSocket, Code, Result, Headers, Body} = tools_http:post_http(Socket, Path, generate_headers(ServerAddr, ServerPort, Path), StrJson),
+    logger:cmd_logf(5, "HTTP POST (JSON) Result: ~p (~p)", [StrUrl, Code]),
+    tools_http:close_socket(NewSocket, Headers),
+    process_cookie(ServerAddr, Headers),
+    put(last_http_response, {ok, Code, Result, process_headers(Headers), Body})
+  end).
 
 process_headers([{K, V} | T]) when is_atom(K) -> [{string:to_lower(atom_to_list(K)), V} | process_headers(T)];
 process_headers([{K, V} | T]) -> [{string:to_lower(K), V} | process_headers(T)];
@@ -273,3 +280,21 @@ cmd_http_get_with_last_modified(StrUrl) ->
 
 str_last_http_url() ->
   get(last_http_url).
+
+cmd_catch_http_error_into_zero(Bool) ->
+  put(catch_http_error_into_zero, Bool).
+  
+manage_error(F) ->
+  case get(catch_http_error_into_zero) of
+    undefined -> F();
+    false -> F();
+    true -> try
+      F()
+      catch
+        A:B ->
+          logger:cmd_logf(5, "Http error : ~p:~p", [A, B]),
+          put(last_http_response, {ok, 0, "", [], ""}),
+          save_header_value(str_last_http_url, [])
+      end
+  end.
+  

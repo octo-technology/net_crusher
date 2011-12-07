@@ -69,9 +69,9 @@ process_arg(Arg) ->
         _ -> Acc
       end
     end
-  end, {}, [{"Str", string}, {"Int", integer},  {"Map", map}, {"Arr", array}, {"Blk", commands}]),
+  end, {}, [{"Str", string}, {"Int", integer},  {"Map", map}, {"Arr", array}, {"Blk", commands}, {"Bool", bool}]),
   case Sym of
-    {} -> throw({wrong_param_nam, Name});
+    {} -> throw({wrong_param_name, Name});
     V -> V
   end.
   

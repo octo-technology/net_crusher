@@ -2,4 +2,5 @@ log
 tmp
 nohup.out
 sinatra.pid
+unused.port
 sinatra.port

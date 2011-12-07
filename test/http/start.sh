@@ -7,7 +7,7 @@ fi
 port=$(ruby find_free_tcp_port.rb)
 
 rm -f nohup.out
-nohup ruby server.rb -p$port &
+nohup ruby server.rb -p$port > nohup.out &
 
 pid=''
 while [ "$pid" = "" ]

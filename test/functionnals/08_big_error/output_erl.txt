@@ -1,7 +1,7 @@
 [              Logger] Set log level : 0
 Process crash detected
 {{nocatch,{execution_error,{error,{{badmatch,{wrong_url,"toto\\\\"}},
-                                   [{http_cmd,cmd_http_get,2},
+                                   [{http_cmd,cmd_http_get,1},
                                     {interpreter,run_function,3},
                                     {interpreter,run_command,1},
                                     {interpreter,run_commands,1},

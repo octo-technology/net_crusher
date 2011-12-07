@@ -5,7 +5,7 @@ start:
 	./start.sh
   
 stop:
-	[ -f sinatra.pid ] && kill `cat sinatra.pid` && rm sinatra.pid
+	./stop.sh
 
 test:
 	./test.sh

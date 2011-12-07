@@ -1,20 +1,14 @@
 #!/bin/sh -e
 
 if [ -f sinatra.pid ]; then
-  kill `cat sinatra.pid` || true
+  thin -p sinatra.pid stop
 fi
 
 port=$(ruby find_free_tcp_port.rb)
 
-rm -f nohup.out
-nohup ruby server.rb -p$port > nohup.out &
+thin -d -s 1 -p sinatra.pid -p $port start
 
-pid=''
-while [ "$pid" = "" ]
-do
-  sleep 1
-  pid=`cat nohup.out | grep 'WEBrick::HTTPServer#start' | perl -pe 's/.*pid=(.*) .*/$1/'`
-done
+sleep 1
 
 echo $pid > sinatra.pid
 echo $port > sinatra.port

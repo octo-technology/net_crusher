@@ -19,29 +19,55 @@
 -export([cmd_start_worker/2,
          cmd_trigger_worker/1,
          cmd_kill_worker/1,
-         worker/2
+         cmd_trigger_scheduled/2,
+         worker/2,
+         worker_scheduled/3
         ]).
 
-cmd_start_worker(StrWorkerName, StrFileName) ->
+cmd_start_worker(StrWorkerName, Blk) ->
   global:register_name(list_to_atom(StrWorkerName),
                       runtime:spawn_with_monitor(node(), ?MODULE, worker,
-                                                 [StrWorkerName, StrFileName])).
+                                                 [StrWorkerName, Blk])).
+
+cmd_trigger_scheduled(StrWorkerName, IntDelay) ->
+  global:register_name(list_to_atom(StrWorkerName ++ "_scheduled"),
+                       runtime:spawn_with_monitor(node(), ?MODULE, worker_scheduled,
+                                                 [StrWorkerName, IntDelay, get()])).
+  
 
 cmd_trigger_worker(StrWorkerName) ->
-  global:whereis_name(list_to_atom(StrWorkerName)) ! {trigger, get()}.
+  global:whereis_name(list_to_atom(StrWorkerName)) ! {trigger_with_map, get()}.
 
 cmd_kill_worker(StrWorkerName) ->
-  tools:stop_process(list_to_atom(StrWorkerName)).
+  tools:stop_process(list_to_atom(StrWorkerName)),
+  tools:stop_process(list_to_atom(StrWorkerName ++ "_scheduled")).
 
-worker(Name, FileName) ->
+worker_scheduled(StrWorkerName, IntDelay, EnvMap) ->
+  lists:map(fun({K, V}) ->
+              case K of
+                "name" -> noop;
+                _ -> put(K, V)
+              end
+            end,
+            EnvMap),
+  worker_scheduled_loop(StrWorkerName, IntDelay).
+  
+worker_scheduled_loop(StrWorkerName, IntDelay) ->
+  receive
+    halt -> noop
+    after IntDelay ->
+      global:whereis_name(list_to_atom(StrWorkerName)) ! {trigger_with_map, get()},
+      worker_scheduled_loop(StrWorkerName, IntDelay)
+  end.
+  
+worker(Name, Blk) ->
   vars:cmd_s("name", Name),
   logger:cmd_log(1, "Starting worker"),
-  Commands = file_loader:load_file(FileName),
-  worker_loop(FileName, Commands).
+  worker_loop(Name, Blk).
 
-worker_loop(FileName, Commands) ->
+worker_loop(Name, Blk) ->
   receive
-    {trigger, EnvMap} ->
+    {trigger_with_map, EnvMap} ->
       lists:map(fun({K, V}) ->
                   case K of
                     "name" -> noop;
@@ -49,8 +75,7 @@ worker_loop(FileName, Commands) ->
                   end
                 end,
                 EnvMap),
-      logger:cmd_log(1, "Worker triggered"),
-      runtime:execute(FileName, Commands),
-      worker_loop(FileName, Commands);
-    halt -> logger:cmd_log(1, "Worker killed")
+      Blk(),
+      worker_loop(Name, Blk);
+    halt -> logger:cmd_log(1, "Worker killed " ++ Name)
   end.

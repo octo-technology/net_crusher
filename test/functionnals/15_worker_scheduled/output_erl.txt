@@ -2,6 +2,8 @@
 [              Logger] Set log level : 1
 [             unknown] here is root unknown
 [     workerunknown_1] here is a workerunknown_1
+[     workerunknown_1] here is a workerunknown_1
+[     workerunknown_1] here is a workerunknown_1
 [     workerunknown_1] Worker killed workerunknown_1
 [       AssertMonitor] Assert ok 0
 [                root] End

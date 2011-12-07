@@ -15,14 +15,20 @@
 ## License along with this library; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-log 0, "here is root #{get_name()}"
-
 set_log_level 1
 
-s "worker_name", "worker#{get_name()}_1"
+log 0, "here is root #{get_name()}"
 
-start_worker g("worker_name"), "a.rb"
+worker_name = "worker#{get_name()}_1"
+
+start_worker worker_name do
+  log 0, "here is a #{get_name()}"
+end
 
 sleep_ms 200
-trigger_worker g("worker_name")
-kill_worker g("worker_name")
+
+trigger_worker worker_name
+
+sleep_ms 200
+
+kill_worker worker_name

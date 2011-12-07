@@ -1,4 +1,4 @@
 #!/bin/sh -e
 
-thin -d -p sinatra.pid stop
+thin -p sinatra.pid stop
 rm sinatra.pid

@@ -22,7 +22,7 @@
   cmd_http_post_form/2,
   cmd_http_post_json/2,
   cmd_add_http_header_on_next_request/2,
-  cmd_catch_http_error_into_zero/1,
+  cmd_catch_http_network_error_into_zero/1,
   cmd_assert_last_http_response_code/1,
   cmd_assert_last_http_response_code_body/2,
   cmd_assert_last_http_response_body_contains/1,
@@ -281,11 +281,11 @@ cmd_http_get_with_last_modified(StrUrl) ->
 str_last_http_url() ->
   get(last_http_url).
 
-cmd_catch_http_error_into_zero(Bool) ->
-  put(catch_http_error_into_zero, Bool).
+cmd_catch_http_network_error_into_zero(Bool) ->
+  put(catch_http_network_error_into_zero, Bool).
   
 manage_error(F) ->
-  case get(catch_http_error_into_zero) of
+  case get(catch_http_network_error_into_zero) of
     undefined -> F();
     false -> F();
     true -> try

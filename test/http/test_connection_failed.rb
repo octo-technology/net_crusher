@@ -1,7 +1,7 @@
 
 base_url = "http://localhost:#{unused_port}"
 
-catch_http_error_into_zero true
+catch_http_network_error_into_zero true
 
 log 0, "Test connection failed on get on port #{unused_port}"
 http_get "#{base_url}/hello"

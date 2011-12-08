@@ -14,3 +14,8 @@ assert_last_http_response_code 0
 log 0, "Test connection failed on post json on port #{unused_port}"
 http_post_json "#{base_url}/post_json", "{\"a\" :\"1\", \"b\" : \"toto\"}"
 assert_last_http_response_code 0
+
+log 0, "Test connection failed back to normal on port #{port}"
+catch_http_network_error_into_zero false
+http_get "http://localhost:#{port}/hello"
+assert_last_http_response_code 200

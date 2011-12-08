@@ -23,6 +23,7 @@
   cmd_http_post_json/2,
   cmd_add_http_header_on_next_request/2,
   cmd_catch_http_network_error_into_zero/1,
+  str_display_last_http_network_error/0,
   cmd_assert_last_http_response_code/1,
   cmd_assert_last_http_response_code_body/2,
   cmd_assert_last_http_response_body_contains/1,
@@ -123,7 +124,7 @@ generate_headers(ServerAddr, ServerPort, Path) ->
     V -> V
   end,
   put(http_headers_for_next_request, undefined),
-  List = [{"Host", Host}, {"Connection", "keep-alive"}] ++ add_basic_auth_headers(ServerAddr) ++ cookies:generate_headers(ServerAddr, Path, get("cookies")),
+  List = [{"Host", Host}] ++ add_basic_auth_headers(ServerAddr) ++ cookies:generate_headers(ServerAddr, Path, get("cookies")),
   lists:foldr(fun({K, V}, Acc) ->
     lists:keystore(K, 1, Acc, {K, V})
   end, List, UserHeaders).
@@ -283,6 +284,9 @@ str_last_http_url() ->
 
 cmd_catch_http_network_error_into_zero(Bool) ->
   put(catch_http_network_error_into_zero, Bool).
+
+str_display_last_http_network_error() ->
+  io_lib:format("~p", [get(last_http_network_error)]).
   
 manage_error(F) ->
   case get(catch_http_network_error_into_zero) of
@@ -293,6 +297,7 @@ manage_error(F) ->
       catch
         A:B ->
           logger:cmd_logf(5, "Http error : ~p:~p", [A, B]),
+          put(last_http_network_error, {A, B}),
           put(last_http_response, {ok, 0, "", [], ""}),
           save_header_value(str_last_http_url, [])
       end

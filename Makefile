@@ -26,7 +26,7 @@ ebin:
 	mkdir -p $(EBIN_DIR)
 
 clean:
-	rm -rf $(EBIN_DIR)
+	$(MAKE) -C net_crusher clean
 	@rm -f erl_crash.dump
 
 erl: all

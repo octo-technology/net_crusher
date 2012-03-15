@@ -40,6 +40,7 @@ $(CONFIG_DIR):
 	mkdir -p $(CONFIG_DIR)
 
 clean:
+	rm ruby.erl
 	rm -rf $(EBIN_DIR)
 	rm -rf $(CONFIG_DIR)
 	@rm -f erl_crash.dump

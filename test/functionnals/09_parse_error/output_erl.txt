@@ -1,5 +1,7 @@
 [              Logger] Set log level : 0
 Process crash detected
 {{nocatch,{unable_to_parse_file,"09_parse_error.rb",
-                                {{error,{19,ruby,["syntax error before: ","12"]}},[{ruby,parse_file,1},{file_loader,file_loader,1}]}}},
- [{file_loader,file_loader,1}]}
+                                {{error,{19,ruby,["syntax error before: ","12"]}},
+[{file,"ruby.yrl"},{line,193}]},
+                                  {file_loader,file_loader,1,[{file,"file_loader.erl"},{line,64}]}]}}},
+[{file,"file_loader.erl"},{line,67}]}]}

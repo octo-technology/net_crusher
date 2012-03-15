@@ -53,8 +53,8 @@ cmd_assert_contains(StrHaystack, StrNeedle) ->
   end.
 
 cmd_assert_matches(Str, StrRegexp) ->
-  case re:match(Str, StrRegexp) of
-    {match, _, _} -> global:whereis_name(process_assert_monitor) ! ok;
+  case re:run(Str, StrRegexp) of
+    {match, _} -> global:whereis_name(process_assert_monitor) ! ok;
     nomatch -> throw({assert_error, matches, [{regexp, StrRegexp}, {text, Str}]})
   end.
 

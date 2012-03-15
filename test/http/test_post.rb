@@ -11,13 +11,15 @@ assert_last_http_response_code_body 200, "myP1Value_myP2Value"
 http_post_json "#{base_url}/post_form", "toto"
 assert_last_http_response_code 404
 
-log 0, "Post json"
+log 0, "Post json with form"
 
 http_post_form "#{base_url}/post_json", {}
 assert_last_http_response_code 404
 
+log 0, "Post json"
+
 http_post_json "#{base_url}/post_json", "{\"a\" :\"1\", \"b\" : \"toto\"}"
-assert_last_http_response_code_body 200, "{\"a\":\"newValueForA\",\"b\":\"toto\"}"
+assert_last_http_response_code_body 200, "{\"b\":\"toto\",\"a\":\"newValueForA\"}"
 
 a = "titi"
 assert_equal "titi", a

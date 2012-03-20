@@ -29,6 +29,10 @@ assert_last_http_response_code_body 200, "{\"b\":\"toto\",\"a\":\"newValueForA\"
 a = "titi"
 assert_equal "titi", a
 
-cmd_http_parse_json
+log 0, "Test http parse json"
+
+http_parse_json
 assert_equal "newValueForA", a
 assert_equal "toto", b
+
+log 0, "Test post ok"

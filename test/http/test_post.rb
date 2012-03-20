@@ -5,7 +5,9 @@ log 0, "Base url : #{base_url}"
 
 log 0, "Post form"
 
-http_post_form "#{base_url}/post_form", {"p1" => "myP1Value", "p2" => 2}
+my_var = 2
+
+http_post_form "#{base_url}/post_form", {"p1" => "myP1Value", "p2" => my_var}
 assert_last_http_response_code_body 200, "myP1Value_2"
 
 http_post_form "#{base_url}/post_form_map", {"user" => {"a" => "my_a", "b" => "my_b"}, "titi" => "toto"}

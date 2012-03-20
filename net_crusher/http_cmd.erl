@@ -155,7 +155,8 @@ add_and_if_needed("") -> "";
 add_and_if_needed(S) -> S ++ "&".
 
 get_encoded_value({string, S}) -> edoc_lib:escape_uri(interpreter:get_string(S));
-get_encoded_value({integer, I}) -> edoc_lib:escape_uri(integer_to_list(interpreter:get_integer(I))).
+get_encoded_value({integer, I}) -> edoc_lib:escape_uri(integer_to_list(interpreter:get_integer(I)));
+get_encoded_value({function, F}) -> edoc_lib:escape_uri(interpreter:get_string(interpreter:exec_function(F))).
 
 encode_map(Map) -> encode_map(Map, "", fun(S) -> S end).
 

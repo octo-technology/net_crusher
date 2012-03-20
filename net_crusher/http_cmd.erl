@@ -151,20 +151,19 @@ process_cookie(ServerAddr, Headers) ->
     end,
     tools_http:extract_headers(Headers, 'Set-Cookie')).
 
-encode_map(Map) -> encode_map(Map, "").
+add_and_if_needed("") -> "";
+add_and_if_needed(S) -> S ++ "&".
 
-encode_map([{A, B} | T], Acc) ->
-  NewAcc = case Acc of
-    "" -> "";
-    _ -> Acc ++ "&"
-  end
-  ++
-  edoc_lib:escape_uri(convert(A)) ++ "=" ++ edoc_lib:escape_uri(convert(B)),
-  encode_map(T, NewAcc);
-encode_map([], Acc) -> Acc.
+get_encoded_value({string, S}) -> edoc_lib:escape_uri(interpreter:get_string(S));
+get_encoded_value({integer, I}) -> edoc_lib:escape_uri(integer_to_list(interpreter:get_integer(I))).
 
-convert(S) when is_list(S) -> S;
-convert(I) when is_integer(I) -> integer_to_list(I).
+encode_map(Map) -> encode_map(Map, "", fun(S) -> S end).
+
+encode_map([{A, {map, X}} | T], Acc, Callback) ->
+  encode_map(T, add_and_if_needed(Acc) ++ encode_map(X, "", fun(S) -> A ++ "[" ++ interpreter:get_string(S) ++ "]" end), Callback);
+encode_map([{A, B} | T], Acc, Callback) ->
+  encode_map(T, add_and_if_needed(Acc) ++ Callback(A) ++ "=" ++ get_encoded_value(B), Callback);
+encode_map([], Acc, _) -> Acc.
 
 str_last_http_response_header(StrName) ->
   {ok, _, _, Headers, _} = get(last_http_response),

@@ -62,6 +62,14 @@ class NetCrusherTestServer < Sinatra::Base
     end
   end
 
+  post '/post_form_map' do
+    if env['CONTENT_TYPE'] == 'application/x-www-form-urlencoded'
+      body params[:user][:a] + "_" + params[:user][:b] + "_" + params[:titi]
+    else
+      status 404
+    end
+  end
+
   post '/post_json' do
     if env['CONTENT_TYPE'] == 'application/json'
       data = JSON.parse request.body.read

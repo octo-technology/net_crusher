@@ -24,7 +24,8 @@ assert_last_http_response_code 404
 log 0, "Post json"
 
 http_post_json "#{base_url}/post_json", "{\"a\" :\"1\", \"b\" : \"toto\"}"
-assert_last_http_response_code_body 200, "{\"b\":\"toto\",\"a\":\"newValueForA\"}"
+assert_last_http_response_code 200 
+assert_last_http_response_body_matches "{\"a\":\"newValueForA\",\"b\":\"toto\"}"
 
 a = "titi"
 assert_equal "titi", a

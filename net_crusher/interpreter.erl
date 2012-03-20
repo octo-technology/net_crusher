@@ -17,7 +17,9 @@
 -module(interpreter).
 
 -export([
-  run_commands/1
+  run_commands/1,
+  get_string/1,
+  get_integer/1
   ]).
 
 run_commands({commands, L}) ->
@@ -103,7 +105,7 @@ get_integer({integer, Int}) -> Int;
 get_integer({function, Command}) -> get_integer(exec_function(Command)).
 
 get_map({map, []}) -> [];
-get_map({map, [{A, B} | T]}) -> [{get_string(A), get_string(B)} | get_map({map, T})];
+get_map({map, [{A, B} | T]}) -> [{get_string(A), B} | get_map({map, T})];
 get_map({function, Command}) -> get_map(exec_function(Command)).
 
 get_array({array, A}) -> get_array(A);

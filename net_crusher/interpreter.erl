@@ -19,7 +19,8 @@
 -export([
   run_commands/1,
   get_string/1,
-  get_integer/1
+  get_integer/1,
+  exec_function/1
   ]).
 
 run_commands({commands, L}) ->

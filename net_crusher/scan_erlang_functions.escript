@@ -25,6 +25,5 @@ main(Args) ->
   io:format(IoDevice, "~p", [erlang_functions_scanner:scan_modules(to_atoms(Modules))]),
   file:close(IoDevice).
   
-  
 to_atoms([H | T]) -> [list_to_atom(H) | to_atoms(T)];
 to_atoms([]) -> [].

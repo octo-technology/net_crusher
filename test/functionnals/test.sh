@@ -3,7 +3,7 @@
 cd `dirname $0`
 
 TO_BE_TESTED=`find . -type d -name '*_*' | perl -pe 's/\.\/(.*)/$1/'`
-ERLANG_CMD="../../../ebin/net_crusher.escript"
+ERLANG_CMD="../../../ebin/net_crusher"
 TMP_FILE="/tmp/tmp_output.txt"
 
 if [ "$TEST_FUNC" != "" ]; then

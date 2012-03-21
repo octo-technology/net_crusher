@@ -14,7 +14,7 @@ SCRIPT_SOURCES=$(wildcard *.escript *.rb)
 SCRIPT_TARGET=$(SCRIPT_SOURCES:%=$(EBIN_DIR)/%)
 CONFIG_FILES_TARGET=$(subst config, $(CONFIG_DIR), $(CONFIG_FILES))
 
-all: $(SCRIPT_TARGET) $(CONFIG_DIR) $(EBIN_DIR) compile $(CONFIG_FILES_TARGET)
+all: $(SCRIPT_TARGET) $(CONFIG_DIR) $(EBIN_DIR) compile $(CONFIG_FILES_TARGET) $(EBIN_DIR)/net_crusher
 
 $(EBIN_DIR)/%.$(EMULATOR): %.erl
 	$(ERLC) $(ERLC_FLAGS) -o $(EBIN_DIR) $<
@@ -23,6 +23,9 @@ $(EBIN_DIR)/%.escript: %.escript
 	cp $< $@
 
 $(EBIN_DIR)/%.rb: %.rb
+	cp $< $@
+
+$(EBIN_DIR)/net_crusher: net_crusher
 	cp $< $@
 
 $(CONFIG_FILES_TARGET): $(CONFIG_FILES)

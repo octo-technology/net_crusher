@@ -3,7 +3,7 @@
 cd `dirname $0`
 
 TO_BE_TESTED=`find . -name 'test_*.rb' | perl -pe 's/\.\/(.*)/$1/'`
-ERLANG_CMD="../../ebin/net_crusher.escript"
+ERLANG_CMD="../../ebin/net_crusher"
 PORT=`cat sinatra.port`
 UNUSED_PORT=`cat unused.port`
 

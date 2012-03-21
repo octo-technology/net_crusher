@@ -19,19 +19,16 @@
 -export([
   run/2,
   sub_process/3,
-  sub_process_light/3,
-
+  
   cmd_execute/1,
   cmd_wait_for_childs_end/0,
   cmd_fork/2,
-  cmd_fork_light/2,
   cmd_fork_distributed/2,
 
   execute/2,
 
-  spawn_with_monitor_handler/4,
+  spawn_with_monitor_handler/1,
   spawn_with_monitor/4,
-  spawn_child_with_monitor/4,
 
   spawn_with_name/2,
 
@@ -43,8 +40,7 @@
 
 start_spawn_with_monitor() ->
   global:register_name(process_spawn_with_monitor,
-                       spawn(node(), ?MODULE, spawn_with_monitor_handler,
-                             [[], [], dict:new(), 0])).
+                       spawn(node(), ?MODULE, spawn_with_monitor_handler, [dict:new()])).
 
 stop_spawn_with_monitor() ->
   tools:stop_process(process_spawn_with_monitor).
@@ -52,28 +48,6 @@ stop_spawn_with_monitor() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MONITORING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-spawn_child(Target, Node, Module, Function, Args) ->
-  ProcessId = spawn(Node, Module, Function, Args),
-  erlang:monitor(process, ProcessId),
-  case Target of
-    undefined -> noop;
-    _ -> Target ! {process, ProcessId}
-  end,
-  ProcessId.
-
-spawn_children([], SubProcesses, ParentProcessDict, _) ->
-  logger:cmd_log(4, "No more process to spawn"),
-  {[], SubProcesses, ParentProcessDict};
-spawn_children([{Target, Node, Module, Function, Args} | T] = ProcessesToSpawn, SubProcesses, ParentProcessDict, MaxProcesses) ->
-  case length(SubProcesses) of
-    N when N > MaxProcesses ->
-      logger:cmd_log(2, "Too many processes are running, waiting before spawning a new one"),
-      {ProcessesToSpawn, SubProcesses, ParentProcessDict};
-    N ->
-      logger:cmd_logf(3, "Spawn child ~p", [N]),
-      NewProcess = spawn_child(Target, Node, Module, Function, Args),
-      spawn_children(T, [NewProcess | SubProcesses], dict:append(Target, NewProcess, ParentProcessDict), MaxProcesses)
-  end.
 
 find_parent_pid_of(ParentProcessDict, Pid) ->
   dict:fold(fun(Key, Value, AccIn) ->
@@ -103,12 +77,7 @@ remove_pid(ParentProcessDict, Pid) ->
       dict:store(ParentPid, NewSubProcesses, ParentProcessDict)
   end.
 
-% ProcessesToSpawn is a list of Pid to spawn when resources are available (ie. #{running processes} <= MaxProcesses
-% SubProcesses is a list of all children spawned. It is used to be able to limit the number of children
-% ParentProcessDict is a dictionnary with the Pid of the parent process as key and
-% a list of spawn children as value
-spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
-                           ParentProcessDict, MaxProcesses) ->
+spawn_with_monitor_handler(ParentProcessDict) ->
   put("name", "spawner"),
   receive
     halt -> noop;
@@ -116,35 +85,18 @@ spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
       ProcessId = spawn(Node, Module, Function, Args),
       erlang:monitor(process, ProcessId),
       Target ! {process, ProcessId},
-      spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
-                                 ParentProcessDict, MaxProcesses);
-    {spawn_child, Target, {Node, Module, Function, Args, NewMaxProcesses}} ->
-      {NewProcessesToSpawn,
-       NewSubProcesses,
-       NewParentProcessDict} = spawn_children([{Target, Node, Module,
-                                                Function, Args} | ProcessesToSpawn],
-                                              SubProcesses, ParentProcessDict,
-                                              NewMaxProcesses),
-      spawn_with_monitor_handler(NewProcessesToSpawn, NewSubProcesses,
-                                 NewParentProcessDict, NewMaxProcesses);
+      spawn_with_monitor_handler(ParentProcessDict);
     {get_nb_child_to_wait, Target, {}} ->
       NbChildren = case dict:find(Target, ParentProcessDict) of
         {ok, Value} -> length(Value);
         _ -> 0
       end,
       Target ! {wait_for_child, NbChildren},
-      spawn_with_monitor_handler(ProcessesToSpawn, SubProcesses,
-                                 ParentProcessDict, MaxProcesses);
+      spawn_with_monitor_handler(ParentProcessDict);
     {'DOWN', _, process, Pid, normal} ->
       logger:cmd_logf(4, "New process down ~p", [Pid]),
       CleanParentProcessDict = remove_pid(ParentProcessDict, Pid),
-      {NewProcessesToSpawn,
-       NewSubProcesses,
-       NewParentProcessDict} = spawn_children(ProcessesToSpawn,
-                                              lists:delete(Pid, SubProcesses),
-                                              CleanParentProcessDict, MaxProcesses),
-      spawn_with_monitor_handler(NewProcessesToSpawn, NewSubProcesses,
-                                 NewParentProcessDict, MaxProcesses);
+      spawn_with_monitor_handler(CleanParentProcessDict);
     {'DOWN', _, process, _, E} ->
       misc:cmd_sleep_ms(100),
       io:fwrite("Process crash detected\n~150p\n", [E]),
@@ -160,11 +112,6 @@ get_nb_child_to_wait() ->
 spawn_with_monitor(Node, Module, Function, Args) ->
   tools:sync_msg(global:whereis_name(process_spawn_with_monitor), process, spawn,
                  {Node, Module, Function, Args}).
-
-spawn_child_with_monitor(Node, Module, Function, Args) ->
-  tools:sync_msg(global:whereis_name(process_spawn_with_monitor), process, spawn_child,
-                 {Node, Module, Function, Args,
-                  list_to_integer(vars:str_g_or_else("max_player", "10000000"))}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RUNTIME
@@ -199,18 +146,9 @@ sub_process(Name, Blk, Map) ->
   Blk(),
   cmd_wait_for_childs_end().
 
-sub_process_light(Name, Blk, Map) ->
-  lists:map(fun({K, V}) -> put(K, V) end, Map),
-  vars:cmd_s("name", Name),
-  Blk(),
-  cmd_wait_for_childs_end().
-
 fork(Node, StrName, Blk) ->
-  spawn_child_with_monitor(Node, ?MODULE, sub_process,
+  spawn_with_monitor(Node, ?MODULE, sub_process,
                            [StrName, Blk, get()]).
-
-cmd_fork_light(StrName, Blk) ->
-  ?TIME(spawn_child(undefined, node(), ?MODULE, sub_process_light, [StrName, Blk, get()]), "cmd_fork_light").
 
 cmd_fork(StrName, Blk) ->
   ?TIME(fork(node(), StrName, Blk), "cmd_fork").
@@ -244,8 +182,7 @@ run(ScriptDir, FileName) ->
   init_node(FileName),
   start_spawn_with_monitor(),
   misc:cmd_inject_argv(),
-  distributed:start(get("script_dir"), get("remote_nodes_ssh"),
-                    get("remote_nodes"), get("use_local_node")),
+  distributed:start(ScriptDir, get("remote_nodes_ssh"), get("remote_nodes"), get("use_local_node")),
   mnesia:change_config(extra_db_nodes, nodes()),
 
   global:register_name(process_assert_monitor, spawn_with_monitor(node(), ?MODULE, spawn_with_name, ["AssertMonitor", fun() -> assert:assert_monitor(0) end])),

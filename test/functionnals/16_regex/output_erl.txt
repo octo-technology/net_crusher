@@ -1,15 +1,9 @@
 [              Logger] Set log level : 0
 Process crash detected
-{{nocatch,{execution_error,{error,{{assert_error,matches,[{regexp,"abc"},{text,"123"}]},
-[{file,"assert.erl"},{line,58}]},
-                                    {interpreter,run_function,3,[{file,"interpreter.erl"},{line,61}]},
-                                    {interpreter,run_command,1,[{file,"interpreter.erl"},{line,54}]},
-                                    {interpreter,run_commands,1,[{file,"interpreter.erl"},{line,30}]},
-                                    {runtime,execute,2,[{file,"runtime.erl"},{line,177}]},
-                                    {runtime,sub_process,3,[{file,"runtime.erl"},{line,199}]}]}},
+{{nocatch,{execution_error,{error,{{assert_error,matches,[{regexp,"abc"},{text,"123"}]},stacktrace_omitted}},
                            {context,{node},
                                     {process_name,"unknown"},
                                     {file,"16_regex.rb"},
                                     {line,9,"assert_matches \"123\", \"abc\""},
                                     {last_http_url,undefined}}}},
-[{file,"runtime.erl"},{line,180}]},{runtime,sub_process,3,[{file,"runtime.erl"},{line,199}]}]}
+[{file,"runtime.erl"},{line,XXX}]},{runtime,sub_process,3,[{file,"runtime.erl"},{line,XXX}]}]}

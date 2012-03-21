@@ -1,6 +1,3 @@
-#!/usr/bin/env escript
-%% -*- erlang -*-
-%%! +c +K true -sname net_crusher -setcookie my_beautiful_cookie_qui_tue -mnesia schema_location
 %% NetCrusher.
 %% Copyright (C) 2011 Bertrand Paquet, David Rousselie All Rights Reserved
 
@@ -17,16 +14,14 @@
 %% You should have received a copy of the GNU Lesser General Public
 %% License along with this library; if not, write to the Free Software
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+-module(stacktrace).
 
-main([FileName | Argv]) ->
-  {_, "R15B"} = init:script_id(),
-  error_logger:tty(false),
-  ScriptName = escript:script_name(),
-  RealFileName = case file:read_link(ScriptName) of
-    {error, _} -> ScriptName;
-    {ok, F} -> F
-  end,
-  ScriptDir = filename:dirname(RealFileName),
-  code:add_path(ScriptDir),
-  put(argv, Argv),
-  runtime:run(ScriptDir, FileName).
+-export([
+  generate/0
+  ]).
+
+generate() ->
+  case get("stacktrace") of
+    "full" -> erlang:get_stacktrace();
+    _ -> stacktrace_omitted
+  end.

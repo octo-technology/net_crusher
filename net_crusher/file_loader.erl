@@ -64,9 +64,9 @@ file_loader(Map) ->
             ruby:parse_file(FileName)
           catch
             E1 ->
-              throw({unable_to_parse_file, FileName, {E1, erlang:get_stacktrace()}});
+              throw({unable_to_parse_file, FileName, {E1, stacktrace:generate()}});
             _:E2 ->
-              throw({unable_to_parse_file, FileName, {E2, erlang:get_stacktrace()}})
+              throw({unable_to_parse_file, FileName, {E2, stacktrace:generate()}})
           end,
           logger:cmd_log(2, "File loaded " ++ FileName),
           {dict:store(FileName, Content, Map), Content}

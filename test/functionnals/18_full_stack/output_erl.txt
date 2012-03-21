@@ -1,0 +1,15 @@
+[              Logger] Set log level : 0
+Process crash detected
+{{nocatch,{execution_error,{error,{{assert_error,equals,[{expected,"a"},{actual,"ab"}]},
+[{file,"assert.erl"},{line,XXX}]},
+                                    {interpreter,run_function,3,[{file,"interpreter.erl"},{line,XXX}]},
+                                    {interpreter,run_command,1,[{file,"interpreter.erl"},{line,XXX}]},
+                                    {interpreter,run_commands,1,[{file,"interpreter.erl"},{line,XXX}]},
+                                    {runtime,execute,2,[{file,"runtime.erl"},{line,XXX}]},
+                                    {runtime,sub_process,3,[{file,"runtime.erl"},{line,XXX}]}]}},
+                           {context,{node},
+                                    {process_name,"unknown"},
+                                    {file,"18_full_stack.rb"},
+                                    {line,23,"assert_equal \"a\", \"ab\""},
+                                    {last_http_url,undefined}}}},
+[{file,"runtime.erl"},{line,XXX}]},{runtime,sub_process,3,[{file,"runtime.erl"},{line,XXX}]}]}

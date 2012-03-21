@@ -15,7 +15,7 @@ for i in $TO_BE_TESTED; do
 	cd $i
 	if [ -f "output_erl.txt" ]; then
 		echo "Processing erlang test for $i"
-		$ERLANG_CMD $i.rb | perl -pe 's/^.*\s\[\s*[^[]*(\[\s*.*)$/$1/' | perl -pe 's/{node,[^}]+}/{node}/g' | perl -pe 's/yeccpars[0-9_]*/yeccpars/g' > $TMP_FILE
+		$ERLANG_CMD $i.rb | perl -pe 's/^.*\s\[\s*[^[]*(\[\s*.*)$/$1/' | perl -pe 's/{node,[^}]+}/{node}/g' | perl -pe 's/yeccpars[0-9_]*/yeccpars/g' | perl -pe 's/{line,\d+}/{line,XXX}/g' > $TMP_FILE
 		diff -du output_erl.txt $TMP_FILE || exit 1
 	fi
 	echo "Test ok : $i"

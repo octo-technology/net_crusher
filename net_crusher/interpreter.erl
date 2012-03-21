@@ -39,11 +39,11 @@ run_command({Line, function_call, FunctionName, Params}) ->
   case lists:keyfind(FunctionName, 1, get(interpreter_funcs)) of
     false -> case length(Params) of
       0 -> {string, vars:str_g(FunctionName)};
-      _ -> throw({line, Line, {missing_function, FunctionName, erlang:get_stacktrace()}})
+      _ -> throw({line, Line, {missing_function, FunctionName, stacktrace:generate()}})
     end;
     {_, {ReturnType, F, TypeOfParams}} -> 
       case length(Params) == length(TypeOfParams) of
-        false -> throw({line, Line, {wrong_number_of_args, FunctionName, erlang:get_stacktrace()}});
+        false -> throw({line, Line, {wrong_number_of_args, FunctionName, stacktrace:generate()}});
         true -> noop
       end,
       {[], MixedParams} = lists:foldl(fun(ParamType, {[Param | Tail], Out}) ->
@@ -60,8 +60,8 @@ run_function(Line, {erlang_function, Module, Function}, Params) ->
     % io:fwrite("Running erlang function ~p:~p (~p)~n", [Module, Function, ProcesedParams]),
     erlang:apply(Module, Function, ProcesedParams)
   catch
-    {line, Line2, E} -> throw({line, Line2, {E, erlang:get_stacktrace()}});
-    _:Term -> throw({line, Line, {Term, erlang:get_stacktrace()}})
+    {line, Line2, E} -> throw({line, Line2, {E, stacktrace:generate()}});
+    _:Term -> throw({line, Line, {Term, stacktrace:generate()}})
   end.
 
 exec_function(Command) -> 
@@ -99,7 +99,7 @@ get_integer(X) when is_integer(X) -> X;
 get_integer({string, String}) ->
   S = get_string({string, String}),
   case catch list_to_integer(S) of
-    {'EXIT', _} -> throw({cannot_be_converted_to_integer, S});
+    {'EXIT', _} -> throw({cannot_be_converted_to_integer, S, stacktrace:generate()});
     V -> V
   end;
 get_integer({integer, Int}) -> Int;

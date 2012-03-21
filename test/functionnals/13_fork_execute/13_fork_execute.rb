@@ -17,7 +17,7 @@
 
 log 0, "here is root #{get_name()}"
 
-fork_light "a" do
+fork "a" do
   log 0, "here is a #{get_name()}"
 end
 

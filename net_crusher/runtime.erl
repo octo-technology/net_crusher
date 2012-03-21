@@ -167,14 +167,11 @@ init_node(FileName) ->
   tools:init_rand(FileName).
 
 run(ScriptDir, FileName) ->
-  FuncFile = ScriptDir ++ "/funcs.dump",
-  {ok, Content} = file:read_file(FuncFile),
-  {ok, Parsed, _} = erl_scan:string(binary_to_list(Content) ++ "."),
-  {ok, Result} = erl_parse:parse_term(Parsed),
-
-  %io:format("Funcs dump~n~p~n", [Result]),
+  Funcs = funcs_list:get(),
   
-  put(interpreter_funcs, Result),
+  %io:format("Funcs dump~n~p~n", [Funcs]),
+  
+  put(interpreter_funcs, Funcs),
 
   io:setopts([{encoding, utf8}]),
   logger:cmd_set_log_level(0),

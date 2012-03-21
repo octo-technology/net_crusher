@@ -19,10 +19,12 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 main(Args) ->
-  [BinDirectory, OutputFile | Modules] = Args,
+  [BinDirectory, OutputFile, ModuleName | Modules] = Args,
   code:add_path(BinDirectory),
   {ok, IoDevice} = file:open(OutputFile, [write]),
-  io:format(IoDevice, "~p", [erlang_functions_scanner:scan_modules(to_atoms(Modules))]),
+  io:format(IoDevice, "-module(~s).~n", [ModuleName]),
+  io:format(IoDevice, "-export([get/0]).~n", []),
+  io:format(IoDevice, "get() -> ~p.~n", [erlang_functions_scanner:scan_modules(to_atoms(Modules))]),
   file:close(IoDevice).
   
 to_atoms([H | T]) -> [list_to_atom(H) | to_atoms(T)];

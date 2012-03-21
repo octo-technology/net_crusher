@@ -1,4 +1,4 @@
-ERL_SOURCES=$(wildcard *.erl) ruby.erl
+ERL_SOURCES=$(wildcard *.erl) ruby.erl funcs_list.erl
 ERLC_FLAGS=-W # -Ddebug
 CONFIG_FILES=$(wildcard config/*)
 
@@ -28,7 +28,7 @@ $(EBIN_DIR)/%.rb: %.rb
 $(CONFIG_FILES_TARGET): $(CONFIG_FILES)
 	cp $< $@
 
-compile: $(EBIN_FILES) $(EBIN_DIR)/funcs.dump
+compile: $(EBIN_FILES)
 
 ruby.erl: ruby.yrl Makefile
 	$(ERL) -eval 'yecc:file("ruby").' -eval 'init:stop().' -noshell -noinput
@@ -40,10 +40,10 @@ $(CONFIG_DIR):
 	mkdir -p $(CONFIG_DIR)
 
 clean:
-	rm -f ruby.erl
+	rm -f ruby.erl funcs_list.erl
 	rm -rf $(EBIN_DIR)
 	rm -rf $(CONFIG_DIR)
 	@rm -f erl_crash.dump
 
-$(EBIN_DIR)/funcs.dump: Makefile $(ERL_SOURCES)
-	./scan_erlang_functions.escript $(EBIN_DIR) $@ logger vars stats runtime misc statment http_cmd http_static assert counters distributed file_loader sampler worker || (rm $@; exit 1)
+funcs_list.erl: Makefile 
+	./scan_erlang_functions.escript $(EBIN_DIR) $@ funcs_list logger vars stats runtime misc statment http_cmd http_static assert counters distributed file_loader sampler worker || (rm $@; exit 1)

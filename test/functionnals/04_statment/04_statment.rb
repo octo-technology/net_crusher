@@ -30,6 +30,12 @@ begin
   s 'z', g('z') + 1
 end while g('z') != 5
 
+z = 0
+begin
+  log 0, "z = #{z}"
+  z = z + 1
+end while z != 3
+
 log 0, "test if"
 
 if 1 < 2 then

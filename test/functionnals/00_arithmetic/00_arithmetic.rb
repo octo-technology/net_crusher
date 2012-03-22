@@ -40,4 +40,8 @@ log 0, "boolean"
 log 0, "a" == "a"
 log 0, "a" != "a"
 log 0, "a" != "b"
-  
+
+a = "a"
+
+log 0, "a" == a
+log 0, a == "a"  

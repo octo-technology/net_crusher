@@ -16,6 +16,9 @@
 [             unknown] z = 2
 [             unknown] z = 3
 [             unknown] z = 4
+[             unknown] z = 0
+[             unknown] z = 1
+[             unknown] z = 2
 [             unknown] test if
 [             unknown] ok
 [             unknown] ok2

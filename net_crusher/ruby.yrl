@@ -50,10 +50,11 @@ func_call_start
 '+'
 '-'
 '!'
+'!='
+'=='
 .
 
 Rootsymbol root.
-
 
 root -> crs root : '$2'.
 root -> commands : {commands, '$1'}.
@@ -97,8 +98,8 @@ expr -> expr '-' expr : { function, { integer, { element(2, '$2'), erlang_statme
 expr -> '!' expr : { function, { bool, { element(2, '$1'), erlang_statment, arithmetic, bool_not, [{bool, '$2'}]}}}.
 expr -> expr '<' expr : { function, { bool, { element(2, '$2'), erlang_statment, arithmetic, bool_int_lesser, [{integer, '$1'}, {integer, '$3'}]}}}.
 expr -> expr '>' expr : { function, { bool, {  element(2, '$2'), erlang_statment, arithmetic, bool_int_greater, [{integer, '$1'}, {integer, '$3'}]}}}.
-expr -> expr '=' '=' expr : { function, { bool, {  element(2, '$2'), erlang_statment, arithmetic, bool_str_equal, [{string, '$1'}, {string, '$4'}]}}}.
-expr -> expr '!' '=' expr : { function, { bool, {  element(2, '$2'), erlang_statment, arithmetic, bool_str_different, [{string, '$1'}, {string, '$4'}]}}}.
+expr -> expr '==' expr : { function, { bool, {  element(2, '$2'), erlang_statment, arithmetic, bool_str_equal, [{string, '$1'}, {string, '$3'}]}}}.
+expr -> expr '!=' expr : { function, { bool, {  element(2, '$2'), erlang_statment, arithmetic, bool_str_different, [{string, '$1'}, {string, '$3'}]}}}.
 
 expr -> array : {array, '$1'}.
 expr -> map : {map, '$1'}.

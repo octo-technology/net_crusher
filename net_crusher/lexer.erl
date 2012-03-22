@@ -35,6 +35,7 @@ parse(Str, LineNumber) ->
     [$\r | Tail] -> parse(Tail, LineNumber);
     [$!, $= | Tail] -> [{'!=', LineNumber} | parse(Tail, LineNumber)];
     [$=, $= | Tail] -> [{'==', LineNumber} | parse(Tail, LineNumber)];
+    [$=, $> | Tail] -> [{'=>', LineNumber} | parse(Tail, LineNumber)];
     [$. | Tail] -> [{'.', LineNumber} | parse(Tail, LineNumber)];
     [$, | Tail] -> [{',', LineNumber} | parse(Tail, LineNumber)];
     [$+ | Tail] -> [{'+', LineNumber} | parse(Tail, LineNumber)];

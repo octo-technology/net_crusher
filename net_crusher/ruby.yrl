@@ -52,6 +52,7 @@ func_call_start
 '!'
 '!='
 '=='
+'=>'
 .
 
 Rootsymbol root.
@@ -116,7 +117,7 @@ map -> '{' '}' : [].
 map_content -> map_elem : ['$1'].
 map_content -> map_elem ',' map_content : ['$1' | '$3'].
 
-map_elem -> expr '=' '>' expr : {'$1', '$4'}.
+map_elem -> expr '=>' expr : {'$1', '$3'}.
 
 command -> if expr then commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$4'}}]}}.
 command -> if expr then crs commands end crs : {void, { element(2, '$1'), erlang_statment, statment, expr_if, [{bool, '$2'}, {commands, {block, '$5'}}]}}.

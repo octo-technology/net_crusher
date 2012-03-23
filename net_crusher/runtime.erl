@@ -34,7 +34,9 @@
 
   init_node/1,
   start_spawn_with_monitor/0,
-  stop_spawn_with_monitor/0
+  stop_spawn_with_monitor/0,
+
+  int_get_nb_child_to_wait/0
 ]).
 -include("../common/macros.hrl").
 
@@ -50,32 +52,40 @@ stop_spawn_with_monitor() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 find_parent_pid_of(ParentProcessDict, Pid) ->
-  dict:fold(fun(Key, Value, AccIn) ->
-              case AccIn of
-                undefined -> case lists:any(fun(E) -> E == Pid end, Value) of
-                               true -> Key;
-                               _ -> undefined
-                             end;
-                _ -> AccIn
-              end
-            end,
-            undefined, ParentProcessDict).
+  dict:fold(
+    fun(Key, Value, AccIn) ->
+      case AccIn of
+        undefined ->
+          case lists:any(fun(E) -> E == Pid end, Value) of
+            true -> {Key, Value};
+            _ -> undefined
+          end;
+        _ -> AccIn
+      end
+    end,
+    undefined, ParentProcessDict).
 
 remove_pid(ParentProcessDict, Pid) ->
   case find_parent_pid_of(ParentProcessDict, Pid) of
     undefined -> ParentProcessDict;
-    ParentPid ->
-      SubProcesses = dict:fetch(ParentPid, ParentProcessDict),
+    {ParentPid, SubProcesses} ->
       logger:cmd_logf(3, "Removing ~p from parent ~p subprocess", [Pid, ParentPid]),
       NewSubProcesses = lists:delete(Pid, SubProcesses),
       case length(NewSubProcesses) of
-          0 ->
-              logger:cmd_logf(3, "Parent ~p has no more subprocess", [ParentPid]),
-              ParentPid ! no_more_subprocess;
-          _ -> noop
+        0 ->
+          logger:cmd_logf(3, "Parent ~p has no more subprocess", [ParentPid]),
+          ParentPid ! no_more_subprocess;
+        _ -> noop
       end,
       dict:store(ParentPid, NewSubProcesses, ParentProcessDict)
   end.
+
+add_pid(ParentProcessDict, ParentPid, NewPid) ->
+  NewList = case dict:find(ParentPid, ParentProcessDict) of
+    error -> [];
+    {ok, List} -> List
+  end ++ [NewPid],
+  dict:store(ParentPid, NewList, ParentProcessDict).
 
 spawn_with_monitor_handler(ParentProcessDict) ->
   vars:cmd_set_name("spawner"),
@@ -85,7 +95,7 @@ spawn_with_monitor_handler(ParentProcessDict) ->
       ProcessId = spawn(Node, Module, Function, Args),
       erlang:monitor(process, ProcessId),
       Target ! {process, ProcessId},
-      spawn_with_monitor_handler(ParentProcessDict);
+      spawn_with_monitor_handler(add_pid(ParentProcessDict, Target, ProcessId));
     {get_nb_child_to_wait, Target, {}} ->
       NbChildren = case dict:find(Target, ParentProcessDict) of
         {ok, Value} -> length(Value);
@@ -104,7 +114,7 @@ spawn_with_monitor_handler(ParentProcessDict) ->
       halt(1)
   end.
 
-get_nb_child_to_wait() ->
+int_get_nb_child_to_wait() ->
   tools:sync_msg(global:whereis_name(process_spawn_with_monitor),
                  wait_for_child, get_nb_child_to_wait,
                  {}).
@@ -217,7 +227,7 @@ stop() ->
   mnesia:stop().
 
 cmd_wait_for_childs_end() ->
-  case get_nb_child_to_wait() of
+  case int_get_nb_child_to_wait() of
     0 -> logger:cmd_log(4, "No child to wait");
     _ ->
       logger:cmd_log(4, "Wait for child end"),

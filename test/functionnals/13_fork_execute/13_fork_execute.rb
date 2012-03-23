@@ -19,8 +19,13 @@ log 0, "here is root #{get_name()}"
 
 fork "a" do
   log 0, "here is a #{get_name()}"
+  sleep_ms 100
 end
 
-sleep_ms 20
+assert_equal 1, get_nb_child_to_wait
+
+sleep_ms 200
+
+assert_equal 0, get_nb_child_to_wait
 
 execute "b.rb"

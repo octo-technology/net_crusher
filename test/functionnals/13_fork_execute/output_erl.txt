@@ -2,5 +2,5 @@
 [             unknown] here is root unknown
 [                   a] here is a a
 [             unknown] here is b unknown
-[       AssertMonitor] Assert ok 0
+[       AssertMonitor] Assert ok 2
 [                root] End

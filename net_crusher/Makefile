@@ -48,5 +48,5 @@ clean:
 	rm -rf $(CONFIG_DIR)
 	@rm -f erl_crash.dump
 
-funcs_list.erl: Makefile $(SRC)
+funcs_list.erl: Makefile $(filter-out funcs_list.erl, $(ERL_SOURCES))
 	./scan_erlang_functions.escript $(EBIN_DIR) $@ funcs_list logger vars stats runtime misc statment http_cmd http_static assert counters distributed file_loader sampler worker || (rm $@; exit 1)

@@ -53,6 +53,7 @@ func_call_start
 '!='
 '=='
 '=>'
+'*'
 .
 
 Rootsymbol root.
@@ -95,6 +96,7 @@ expr -> expr '.' 'to_s' : '$1'.
 expr -> expr '.' 'to_i' : '$1'.
 expr -> integer : { integer, element(3, '$1')}.
 expr -> expr '+' expr : { function, { integer, { element(2, '$2'), erlang_statment, arithmetic, int_add, [{integer, '$1'}, {integer, '$3'}]}}}.
+expr -> expr '*' expr : { function, { integer, { element(2, '$2'), erlang_statment, arithmetic, int_mul, [{integer, '$1'}, {integer, '$3'}]}}}.
 expr -> expr '-' expr : { function, { integer, { element(2, '$2'), erlang_statment, arithmetic, int_sub, [{integer, '$1'}, {integer, '$3'}]}}}.
 expr -> '!' expr : { function, { bool, { element(2, '$1'), erlang_statment, arithmetic, bool_not, [{bool, '$2'}]}}}.
 expr -> expr '<' expr : { function, { bool, { element(2, '$2'), erlang_statment, arithmetic, bool_int_lesser, [{integer, '$1'}, {integer, '$3'}]}}}.

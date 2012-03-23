@@ -78,7 +78,7 @@ remove_pid(ParentProcessDict, Pid) ->
   end.
 
 spawn_with_monitor_handler(ParentProcessDict) ->
-  put("name", "spawner"),
+  vars:cmd_set_name("spawner"),
   receive
     halt -> noop;
     {spawn, Target, {Node, Module, Function, Args}} ->
@@ -139,7 +139,7 @@ execute(FileName, Commands) ->
 
 sub_process(Name, Blk, Map) ->
   lists:map(fun({K, V}) -> put(K, V) end, Map),
-  vars:cmd_s("name", Name),
+  vars:cmd_set_name(Name),
   {ok, Hostname} = inet:gethostname(),
   vars:cmd_s("hostname", Hostname),
   tools:init_rand(Name),
@@ -235,5 +235,5 @@ wait_for_process_end(P) ->
   end.
 
 spawn_with_name(Name, Function) ->
-  put("name", Name),
+  vars:cmd_set_name(Name),
   Function().

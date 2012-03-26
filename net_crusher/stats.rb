@@ -31,6 +31,3 @@ end
 stats.each do |id, s|
   puts "#{id};count=#{s[:count]};min=#{s[:min]} ms;max=#{s[:max]} ms; avg=#{s[:sum] / s[:count]} ms;#{calculate_percentile(valuelist[id], 0.9)} (%90)"
 end
-
-
-#{"video_2" => [1,2,3,4,5,6]}, {"video_3" => [1,2,3,4,5,6]}

@@ -21,5 +21,8 @@
 [             unknown] true
 [             unknown] true
 [             unknown] 42
+[             unknown] 1
+[             unknown] 1
+[             unknown] 2
 [       AssertMonitor] Assert ok 0
 [                root] End

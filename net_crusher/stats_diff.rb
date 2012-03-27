@@ -28,6 +28,6 @@ valuelist2.keys.each  do |key|
   percent90diff = pair2[:percent90].to_f - pair1[:percent90].to_f
   avgdiff_percent = (pair2[:avg].to_f / pair1[:avg].to_f)*100
   percent90diff_percent = (pair2[:percent90].to_f / pair1[:percent90].to_f)*100
-  puts "#{fill(key, 15)}#{fill(sprintf("%.2f", avgdiff), 10)}#{fill(sprintf("%.2f%%", avgdiff_percent),10)}#{fill(sprintf("%.2f", percent90diff), 10)}#{fill(sprintf("%.2f%%", percent90diff_percent), 10)}"
+  puts "#{fill(key, 15)}#{fill(sprintf("%.2f", avgdiff), 10)}#{fill(sprintf("%.2f%%", 100 - avgdiff_percent),10)}#{fill(sprintf("%.2f", percent90diff), 10)}#{fill(sprintf("%.2f%%", 100 -  percent90diff_percent), 10)}"
 end
 

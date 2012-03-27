@@ -20,6 +20,7 @@
   int_add/2,
   int_sub/2,
   int_mul/2,
+  int_div/2,
   bool_int_lesser/2,
   bool_int_greater/2,
   bool_str_equal/2,
@@ -35,3 +36,4 @@ bool_str_different(S1, S2) -> S1 /= S2.
 int_add(I1, I2) -> I1 + I2.
 int_sub(I1, I2) -> I1 - I2.
 int_mul(I1, I2) -> I1 * I2.
+int_div(I1, I2) -> erlang:trunc(I1 / I2).

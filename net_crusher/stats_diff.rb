@@ -1,11 +1,13 @@
 def parse_file(file) 
   valuelist = {}
   File.open(file).each_line do |line|
-   columns = line.split(";")
-   id = columns[0] 
-   avg = columns[4].match(/([\d\.]+)/)[1] 
-   percent90 = columns[5].match(/([\d\.]+)/)[1]
-   valuelist[id] = {:avg => avg, :percent90 => percent90}
+   if line.include?(";") 
+     columns = line.split(";")
+     id = columns[0] 
+     avg = columns[4].match(/([\d\.]+)/)[1] 
+     percent90 = columns[5].match(/([\d\.]+)/)[1]
+     valuelist[id] = {:avg => avg, :percent90 => percent90}
+  end
   end
   valuelist
 end

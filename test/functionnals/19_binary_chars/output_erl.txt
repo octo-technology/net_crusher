@@ -1,6 +1,7 @@
 [              Logger] Set log level : 0
 [             unknown] 4
 [             unknown] 4
+[             unknown] 12345678
 [             unknown] 
 [       AssertMonitor] Assert ok 0
 [                root] End

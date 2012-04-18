@@ -23,6 +23,10 @@ my_string = "\064"
 
 log 0, my_string
 
+my_string = "123\0645678"
+
+log 0, my_string
+
 my_string = "\x01"
 
 log 0, my_string

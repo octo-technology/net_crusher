@@ -1,0 +1,9 @@
+[              Logger] Set log level : 0
+Process crash detected
+{{nocatch,{execution_error,{error,{{no_variable_defined,"non_existing_func_without_param"},stacktrace_omitted}},
+                           {context,{node},
+                                    {process_name,"unknown"},
+                                    {file,"20_non_existing_func.rb"},
+                                    {line,18,"non_existing_func_without_param"},
+                                    {last_http_url,undefined}}}},
+[{file,"runtime.erl"},{line,XXX}]},{runtime,sub_process,3,[{file,"runtime.erl"},{line,XXX}]}]}

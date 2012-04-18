@@ -38,7 +38,11 @@ run_command({ReturnType, {Line, erlang_statment, Module, Function, Params}}) ->
 run_command({Line, function_call, FunctionName, Params}) ->
   case lists:keyfind(FunctionName, 1, get(interpreter_funcs)) of
     false -> case length(Params) of
-      0 -> {string, vars:str_g(FunctionName)};
+      0 -> try
+        {string, vars:str_g(FunctionName)}
+        catch
+          _:Term -> throw({line, Line, {Term, stacktrace:generate()}})
+        end;
       _ -> throw({line, Line, {missing_function, FunctionName, stacktrace:generate()}})
     end;
     {_, {ReturnType, F, TypeOfParams}} -> 

@@ -84,6 +84,8 @@ find_delimiter_and_unescape(Before, Delim, [$\\, $" | Tail]) -> find_delimiter_a
 find_delimiter_and_unescape(Before, Delim, [$\\, $' | Tail]) -> find_delimiter_and_unescape(Before ++ [$'], Delim, Tail);
 find_delimiter_and_unescape(Before, Delim, [$\\, $\\ | Tail]) -> find_delimiter_and_unescape(Before ++ [$\\], Delim, Tail);
 find_delimiter_and_unescape(Before, Delim, [$\\, $n | Tail]) -> find_delimiter_and_unescape(Before ++ [$\n], Delim, Tail);
+find_delimiter_and_unescape(Before, Delim, [$\\, $x, A, B | Tail]) when (A > 47) and (A < 58) and (B > 47) and (B < 58) -> Char = (A - 48) * 16 + (B - 48), find_delimiter_and_unescape(Before ++ binary_to_list(<<Char>>), Delim, Tail);
+find_delimiter_and_unescape(Before, Delim, [$\\, A, B, C | Tail]) when (A > 47) and (A < 58) and (B > 47) and (B < 58) and (C > 47) and (C < 58) -> Char = (A - 48) * 8 * 8 + (B - 48) * 8 + (C - 48), find_delimiter_and_unescape(Before ++ binary_to_list(<<Char>>), Delim, Tail);
 find_delimiter_and_unescape(_, _, [$\\, X | _]) -> throw({lexer_error, unkown_escaped_character, X});
 find_delimiter_and_unescape(Before, Delim, [Delim | After]) -> {Before, After};
 find_delimiter_and_unescape(Before, Delim, [X | Tail]) -> find_delimiter_and_unescape(Before ++ [X], Delim, Tail);

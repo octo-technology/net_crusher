@@ -19,7 +19,7 @@
 %% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 main([FileName | Argv]) ->
-  {_, "R15B"} = init:script_id(),
+  % {_, "R15B"} = init:script_id(),
   error_logger:tty(false),
   ScriptName = escript:script_name(),
   RealFileName = case file:read_link(ScriptName) of

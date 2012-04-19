@@ -2,6 +2,18 @@
 
 cd `dirname $0`
 
+VERSION=`erl -eval 'io:format("~p~n", [init:script_id()]).' -eval 'init:stop().' -noshell -noinput`
+
+echo "Current erlang version $VERSION"
+
+set +e
+echo $VERSION | grep "R15B" > /dev/null
+if [ "$?" = 1 ]; then
+	echo "These test have to be run with erlang R15B"
+	exit 1
+fi
+set -e
+
 TO_BE_TESTED=`find . -type d -name '*_*' | perl -pe 's/\.\/(.*)/$1/'`
 ERLANG_CMD="../../../ebin/net_crusher"
 TMP_FILE="/tmp/tmp_output.txt"
